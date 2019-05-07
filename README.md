@@ -15,14 +15,18 @@ Output is provided in JSON format.
 ### Fetch credentials
 ```./bmctool <node>```
 
-Retrieves the credentials for the node `<node>`.
+Retrieves the credentials for `<node>`.
 
 ### Add a new node
+(TODO)
+
 ```./bmctool -add <node> -user <username> -pass <password> -addr <address>```
 
 Creates the node `<node>` with the provided `username`, `password` and `address`. If the specified node already exists, the command will fail.
 
 ### Update an existing node
+(TODO)
+
 ```./bmctool -update <node> -user <username> -pass <password> -addr <address>```
 
 Update details for node `<node>`. If `<node>` does not exist, the command will fail.
@@ -31,4 +35,3 @@ Update details for node `<node>`. If `<node>` does not exist, the command will f
 ```-project <project_id>```
 
 Use the specified `<project_id>` to connect to GCD.
-d
