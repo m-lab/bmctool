@@ -23,9 +23,10 @@ var (
 	node      = flag.String("node", "", "The node's name.")
 	projectID = flag.String("project", defaultProjectID, "Project ID to use.")
 
-	// These allows for testing.
-	createProvider = creds.NewProvider
-	marshalJSON    = json.MarshalIndent
+	// These allow for testing.
+	credsNewProvider  = creds.NewProvider
+	jsonMarshalIndent = json.MarshalIndent
+	osExit            = os.Exit
 )
 
 func usage() {
@@ -44,20 +45,20 @@ func main() {
 	if *node == "" {
 		fmt.Fprintln(os.Stderr, "Error: node not specified.")
 		flag.Usage()
-		return
+		osExit(1)
 	}
 
-	provider := createProvider(*projectID, namespace)
+	provider := credsNewProvider(*projectID, namespace)
 	creds, err := provider.FindCredentials(context.Background(), *node)
 	if err != nil {
 		log.Errorf("Error while fetching credentials: %v\n", err)
-		return
+		osExit(1)
 	}
 
-	jsonOutput, err := marshalJSON(creds, "", "  ")
+	jsonOutput, err := jsonMarshalIndent(creds, "", "  ")
 	if err != nil {
 		log.Errorf("Cannot marshall JSON: %v\n", err)
-		return
+		osExit(1)
 	}
 
 	fmt.Println(string(jsonOutput))

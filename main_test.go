@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/m-lab/reboot-service/creds"
-
 	"github.com/m-lab/go/osx"
+	"github.com/m-lab/reboot-service/creds"
+	"github.com/stretchr/testify/assert"
 )
 
 type providerMock struct {
@@ -24,13 +24,6 @@ func (p *providerMock) FindCredentials(ctx context.Context, node string) (*creds
 }
 
 func Test_main(t *testing.T) {
-	// No node specified, just print usage and return.
-	main()
-
-	// Set up env variables to simulate flags.
-	restoreNode := osx.MustSetenv("NODE", "mlab4.lga0t.measurement-lab.org")
-	defer restoreNode()
-
 	// Create fake Credentials.
 	fakeCreds := &creds.Credentials{
 		Address:  "0.0.0.0",
@@ -40,27 +33,50 @@ func Test_main(t *testing.T) {
 		Model:    "drac",
 	}
 
-	oldCreateProvider := createProvider
-	createProvider = func(projectID string, namespace string) creds.Provider {
+	// Replace osExit so that tests don't stop running.
+	osExit = func(code int) {
+		if code != 1 {
+			t.Fatalf("Expected a 1 exit code, got %d.", code)
+		}
+
+		panic("os.Exit called")
+	}
+
+	// No node specified, just print usage and return.
+	assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+
+	// Set up env variables to simulate flags.
+	restoreNode := osx.MustSetenv("NODE", "mlab4.lga0t.measurement-lab.org")
+	defer restoreNode()
+
+	// main should exit if the Credentials object can't be marshalled.
+	oldCredsNewProvider := credsNewProvider
+	credsNewProvider = func(projectID string, namespace string) creds.Provider {
+		return &providerMock{
+			returnValue: fakeCreds,
+		}
+	}
+	oldJSONMarshalIndent := jsonMarshalIndent
+	jsonMarshalIndent = func(interface{}, string, string) ([]byte, error) {
+		return nil, errors.New("error while marshalling JSON")
+	}
+	assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+	jsonMarshalIndent = oldJSONMarshalIndent
+
+	// main should exit if the Provider returns an error.
+	credsNewProvider = func(projectID string, namespace string) creds.Provider {
+		return &providerMock{
+			returnErr: true,
+		}
+	}
+	assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+
+	credsNewProvider = func(projectID string, namespace string) creds.Provider {
 		return &providerMock{
 			returnValue: fakeCreds,
 		}
 	}
 	main()
 
-	// main should return if the Credentials object can't be marshalled.
-	marshalJSON = func(interface{}, string, string) ([]byte, error) {
-		return nil, errors.New("error while marshalling JSON")
-	}
-	main()
-
-	// main should return if the Provider returns an error.
-	createProvider = func(projectID string, namespace string) creds.Provider {
-		return &providerMock{
-			returnErr: true,
-		}
-	}
-	main()
-
-	createProvider = oldCreateProvider
+	credsNewProvider = oldCredsNewProvider
 }
