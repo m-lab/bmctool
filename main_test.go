@@ -42,15 +42,18 @@ func Test_main(t *testing.T) {
 		panic("os.Exit called")
 	}
 
-	// No node specified, just print usage and return.
-	assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+	oldCredsNewProvider := credsNewProvider
+
+	t.Run("failure-no-node-provided", func(t *testing.T) {
+		// No node specified, just print usage and return.
+		assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+	})
 
 	// Set up env variables to simulate flags.
 	restoreNode := osx.MustSetenv("NODE", "mlab4.lga0t.measurement-lab.org")
 	defer restoreNode()
 
 	// main should exit if the Credentials object can't be marshalled.
-	oldCredsNewProvider := credsNewProvider
 	credsNewProvider = func(projectID string, namespace string) creds.Provider {
 		return &providerMock{
 			returnValue: fakeCreds,
@@ -60,7 +63,9 @@ func Test_main(t *testing.T) {
 	jsonMarshalIndent = func(interface{}, string, string) ([]byte, error) {
 		return nil, errors.New("error while marshalling JSON")
 	}
-	assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+	t.Run("failure-cannot-marshal-json", func(t *testing.T) {
+		assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+	})
 	jsonMarshalIndent = oldJSONMarshalIndent
 
 	// main should exit if the Provider returns an error.
@@ -69,14 +74,18 @@ func Test_main(t *testing.T) {
 			returnErr: true,
 		}
 	}
-	assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+	t.Run("failure-cannot-find-credentials", func(t *testing.T) {
+		assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
+	})
 
 	credsNewProvider = func(projectID string, namespace string) creds.Provider {
 		return &providerMock{
 			returnValue: fakeCreds,
 		}
 	}
-	main()
+	t.Run("success", func(t *testing.T) {
+		main()
+	})
 
 	credsNewProvider = oldCredsNewProvider
 }
