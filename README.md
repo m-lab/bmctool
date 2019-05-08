@@ -12,6 +12,11 @@ In particular, it allows to:
 Output is provided in JSON format.
 
 ## Usage
+### Common flags
+```-project <project_id>```
+
+Use the specified `<project_id>` to connect to GCD.
+
 ### Fetch credentials
 ```./bmctool <node>```
 
@@ -30,8 +35,3 @@ Creates the node `<node>` with the provided `username`, `password` and `address`
 ```./bmctool -update <node> -user <username> -pass <password> -addr <address>```
 
 Update details for node `<node>`. If `<node>` does not exist, the command will fail.
-
-### Common flags
-```-project <project_id>```
-
-Use the specified `<project_id>` to connect to GCD.
