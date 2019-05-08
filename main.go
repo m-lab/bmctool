@@ -57,7 +57,7 @@ func main() {
 
 	jsonOutput, err := jsonMarshalIndent(creds, "", "  ")
 	if err != nil {
-		log.Errorf("Cannot marshall JSON: %v\n", err)
+		log.Errorf("Cannot marshal JSON: %v\n", err)
 		osExit(1)
 	}
 
