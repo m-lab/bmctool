@@ -23,6 +23,8 @@ var (
 	projectID = flag.String("project", defaultProjectID, "Project ID to use.")
 
 	// These allow for testing.
+	// TODO: remove this once https://github.com/m-lab/reboot-service/issues/12
+	// is closed.
 	credsNewProvider = creds.NewProvider
 	osExit           = os.Exit
 )
