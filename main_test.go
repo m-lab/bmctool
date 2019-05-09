@@ -57,31 +57,6 @@ func Test_main(t *testing.T) {
 	restoreNode := osx.MustSetenv("NODE", "mlab4.lga0t.measurement-lab.org")
 	defer restoreNode()
 
-	// main should exit if the Credentials object can't be marshalled.
-	credsNewProvider = func(projectID string, namespace string) creds.Provider {
-		return &providerMock{
-			returnValue: fakeCreds,
-		}
-	}
-	oldJSONMarshalIndent := jsonMarshalIndent
-	jsonMarshalIndent = func(interface{}, string, string) ([]byte, error) {
-		return nil, errors.New("error while marshalling JSON")
-	}
-	t.Run("failure-cannot-marshal-json", func(t *testing.T) {
-		assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
-	})
-	jsonMarshalIndent = oldJSONMarshalIndent
-
-	// main should exit if the Provider returns an error.
-	credsNewProvider = func(projectID string, namespace string) creds.Provider {
-		return &providerMock{
-			returnErr: true,
-		}
-	}
-	t.Run("failure-cannot-find-credentials", func(t *testing.T) {
-		assert.PanicsWithValue(t, "os.Exit called", main, "os.Exit was not called")
-	})
-
 	credsNewProvider = func(projectID string, namespace string) creds.Provider {
 		return &providerMock{
 			returnValue: fakeCreds,

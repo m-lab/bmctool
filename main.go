@@ -24,10 +24,9 @@ var (
 	projectID = flag.String("project", defaultProjectID, "Project ID to use.")
 
 	// These allow for testing.
-	credsNewProvider  = creds.NewProvider
-	jsonMarshalIndent = json.MarshalIndent
-	osExit            = os.Exit
-	logFatalf         = log.Fatalf
+	credsNewProvider = creds.NewProvider
+	osExit           = os.Exit
+	logFatalf        = log.Fatalf
 )
 
 func usage() {
@@ -51,14 +50,10 @@ func main() {
 
 	provider := credsNewProvider(*projectID, namespace)
 	creds, err := provider.FindCredentials(context.Background(), *node)
-	if err != nil {
-		logFatalf("Error while fetching credentials: %v\n", err)
-	}
+	rtx.Must(err, "Error while fetching credentials: %v\n", err)
 
-	jsonOutput, err := jsonMarshalIndent(creds, "", "  ")
-	if err != nil {
-		logFatalf("Cannot marshal JSON: %v\n", err)
-	}
+	jsonOutput, err := json.MarshalIndent(creds, "", "  ")
+	rtx.Must(err, "Cannot marshal JSON: %v\n")
 
 	fmt.Println(string(jsonOutput))
 }
