@@ -34,6 +34,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "%s -node <node>: fetch credentials for <node>.\n\n", os.Args[0])
 	fmt.Fprintln(os.Stderr, "Flags:")
 	flag.PrintDefaults()
+	osExit(1)
 }
 
 func main() {
@@ -45,7 +46,6 @@ func main() {
 	if *node == "" {
 		fmt.Fprintln(os.Stderr, "Error: node not specified.")
 		flag.Usage()
-		osExit(1)
 	}
 
 	provider := credsNewProvider(*projectID, namespace)
