@@ -25,13 +25,17 @@ Retrieves the credentials for `<node>`.
 ### Add a new node
 (TODO)
 
-```./bmctool -add <node> -user <username> -pass <password> -addr <address>```
+Set the shell variables `BMCUSER` and `BMCPASSWORD` to the appropriate values.
 
-Creates the node `<node>` with the provided `username`, `password` and `address`. If the specified node already exists, the command will fail.
+```./bmctool -add <node> -addr <address>```
+
+Creates the node `<node>` with the provided `BMCUSER`, `BMCPASSWORD` and `<address>`. If the specified node already exists, the command will fail.
 
 ### Update an existing node
 (TODO)
 
-```./bmctool -update <node> -user <username> -pass <password> -addr <address>```
+Set the shell variables `BMCUSER` and `BMCPASSWORD` to the appropriate values.
+
+```./bmctool -update <node> -addr <address>```
 
 Update details for node `<node>`. If `<node>` does not exist, the command will fail.
