@@ -10,7 +10,6 @@ import (
 	"github.com/m-lab/go/flagx"
 	"github.com/m-lab/go/rtx"
 
-	"github.com/apex/log"
 	"github.com/m-lab/reboot-service/creds"
 )
 
@@ -26,7 +25,6 @@ var (
 	// These allow for testing.
 	credsNewProvider = creds.NewProvider
 	osExit           = os.Exit
-	logFatalf        = log.Fatalf
 )
 
 func usage() {

@@ -42,10 +42,6 @@ func Test_main(t *testing.T) {
 		panic("os.Exit called")
 	}
 
-	logFatalf = func(msg string, v ...interface{}) {
-		osExit(1)
-	}
-
 	oldCredsNewProvider := credsNewProvider
 
 	t.Run("failure-no-node-provided", func(t *testing.T) {
