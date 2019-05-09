@@ -33,13 +33,17 @@ func Test_main(t *testing.T) {
 		Model:    "drac",
 	}
 
-	// Replace osExit so that tests don't stop running.
+	// Replace osExit and logFatalf so that tests don't stop running.
 	osExit = func(code int) {
 		if code != 1 {
 			t.Fatalf("Expected a 1 exit code, got %d.", code)
 		}
 
 		panic("os.Exit called")
+	}
+
+	logFatalf = func(msg string, v ...interface{}) {
+		osExit(1)
 	}
 
 	oldCredsNewProvider := credsNewProvider
