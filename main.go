@@ -50,10 +50,10 @@ func main() {
 
 	provider := credsNewProvider(*projectID, namespace)
 	creds, err := provider.FindCredentials(context.Background(), *node)
-	rtx.Must(err, "Error while fetching credentials: %v\n", err)
+	rtx.Must(err, "Error while fetching credentials")
 
 	jsonOutput, err := json.MarshalIndent(creds, "", "  ")
-	rtx.Must(err, "Cannot marshal JSON: %v\n")
+	rtx.Must(err, "Cannot marshal JSON")
 
 	fmt.Println(string(jsonOutput))
 }
