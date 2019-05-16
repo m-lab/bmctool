@@ -103,6 +103,8 @@ func main() {
 	}
 
 	// Handle action flags
+	// TODO(roberto): use a module enabling subcommands (such as kingpin)
+	// instead of "flag".
 	//
 	// -add: create a new entity
 	// -update: updates an existing entity (TODO)
