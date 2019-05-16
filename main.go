@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -34,8 +33,6 @@ var (
 	addAction = flag.Bool("add", false, "Add a new node to GCS.")
 
 	// These allow for testing.
-	// TODO: remove this once https://github.com/m-lab/reboot-service/issues/12
-	// is closed.
 	credsNewProvider = creds.NewProvider
 	osExit           = os.Exit
 )
@@ -48,11 +45,11 @@ func usage() {
 	osExit(1)
 }
 
-func add() error {
-	// Add a new BMC to Google Cloud Datastore
-	var err error
+// addCredentials adds a new BMC to Google Cloud Datastore.
+func addCredentials() error {
 	if *bmcUser == "" || *bmcPass == "" || *bmcAddr == "" {
-		return errors.New("bmcuser, bmcpass and bmcaddr are required")
+		log.Println("bmcuser, bmcpassword and addr are required")
+		osExit(1)
 	}
 
 	creds := &creds.Credentials{
@@ -69,36 +66,29 @@ func add() error {
 	// Provider.AddCredentials will create the entity regardless of whether it
 	// exists already or not, so we need to explicitly check to prevent
 	// overriding the existing entity by mistake.
-	_, err = provider.FindCredentials(context.Background(), *node)
+	_, err := provider.FindCredentials(context.Background(), *node)
 	if err == nil {
-		return fmt.Errorf("Credentials for hostname %v already exist "+
-			"- did you mean -update?", *node)
+		log.Printf("Credentials for hostname %v already exist\n", *node)
+		osExit(1)
 	}
 
-	err = provider.AddCredentials(context.Background(), *node, creds)
-	if err != nil {
-		return err
-	}
+	rtx.Must(provider.AddCredentials(context.Background(), *node, creds),
+		"Error while adding Credentials")
 
 	return nil
 }
 
-func fetch() error {
-	// Default behavior (if no other actions have been specified) is to fetch
-	// credentials for the selected node.
+// printCredentials retrieves credentials for a given hostname and prints them
+// in JSON format.
+func printCredentials(host string) {
 	provider := credsNewProvider(*projectID, namespace)
 	creds, err := provider.FindCredentials(context.Background(), *node)
-	if err != nil {
-		return err
-	}
+	rtx.Must(err, "Cannot fetch credentials")
 
 	jsonOutput, err := json.MarshalIndent(creds, "", "  ")
-	if err != nil {
-		return err
-	}
+	rtx.Must(err, "Cannot marshal JSON output")
 
 	fmt.Println(string(jsonOutput))
-	return nil
 }
 
 func main() {
@@ -118,8 +108,10 @@ func main() {
 	// -update: updates an existing entity (TODO)
 	// no flags: fetch credentials
 	if *addAction {
-		rtx.Must(add(), "Error while adding node")
+		rtx.Must(addCredentials(), "Error while adding credentials")
 	} else {
-		rtx.Must(fetch(), "Error while fetching credentials")
+		// Default behavior (if no other actions have been specified) is to fetch
+		// credentials for the requested node.
+		printCredentials(*node)
 	}
 }
