@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/apex/log"
 	"github.com/m-lab/go/flagx"
 	"github.com/m-lab/go/rtx"
 
@@ -48,7 +48,7 @@ func usage() {
 // addCredentials adds a new BMC to Google Cloud Datastore.
 func addCredentials() error {
 	if *bmcUser == "" || *bmcPass == "" || *bmcAddr == "" {
-		log.Println("bmcuser, bmcpassword and addr are required")
+		log.Error("bmcuser, bmcpassword and addr are required")
 		osExit(1)
 	}
 
@@ -60,7 +60,7 @@ func addCredentials() error {
 		Password: *bmcPass,
 	}
 
-	log.Printf("Adding credentials for host %v\n", *node)
+	log.Infof("Adding credentials for host %v\n", *node)
 	provider := credsNewProvider(*projectID, namespace)
 
 	// Provider.AddCredentials will create the entity regardless of whether it
@@ -68,13 +68,14 @@ func addCredentials() error {
 	// overriding the existing entity by mistake.
 	_, err := provider.FindCredentials(context.Background(), *node)
 	if err == nil {
-		log.Printf("Credentials for hostname %v already exist\n", *node)
+		log.Errorf("Credentials for hostname %v already exist\n", *node)
 		osExit(1)
 	}
 
 	rtx.Must(provider.AddCredentials(context.Background(), *node, creds),
 		"Error while adding Credentials")
 
+	log.Infof("Added %v\nUsername: %s\nPassword: %s", *node, *bmcUser, *bmcPass)
 	return nil
 }
 
@@ -103,7 +104,7 @@ func main() {
 	}
 
 	// Handle action flags
-	// TODO(roberto): use a module enabling subcommands (such as kingpin)
+	// TODO(roberto): use a package that handles subcommands (such as kingpin)
 	// instead of "flag".
 	//
 	// -add: create a new entity

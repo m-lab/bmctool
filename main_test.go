@@ -14,11 +14,11 @@ import (
 func Test_main(t *testing.T) {
 	// Create fake Credentials.
 	fakeCreds := &creds.Credentials{
-		Address:  "0.0.0.0",
+		Address:  "127.0.0.1",
 		Hostname: "mlab4.lga0t.measurement-lab.org",
 		Username: "username",
 		Password: "password",
-		Model:    "drac",
+		Model:    "DRAC",
 	}
 
 	// Replace osExit so that tests don't stop running.
@@ -38,15 +38,16 @@ func Test_main(t *testing.T) {
 	})
 
 	// Set up a FakeProvider with fake credentials.
+	prov := credstest.NewProvider()
+	prov.AddCredentials(context.Background(), "mlab4d.lga0t.measurement-lab.org", fakeCreds)
 	credsNewProvider = func(string, string) creds.Provider {
-		prov := credstest.NewProvider()
-		prov.AddCredentials(context.Background(), "mlab4d.lga0t.measurement-lab.org", fakeCreds)
 		return prov
 	}
+
 	// Set up env variables to simulate flags.
 	restoreNode := osx.MustSetenv("NODE", "mlab4d.lga0t.measurement-lab.org")
 	defer restoreNode()
-	t.Run("success", func(t *testing.T) {
+	t.Run("success-print-credentials", func(t *testing.T) {
 		main()
 	})
 
@@ -55,7 +56,7 @@ func Test_main(t *testing.T) {
 	restoreAdd := osx.MustSetenv("ADD", "1")
 	restoreUser := osx.MustSetenv("BMCUSER", "username")
 	restorePass := osx.MustSetenv("BMCPASSWORD", "password")
-	restoreAddr := osx.MustSetenv("ADDR", "127.0.0.1")
+	restoreAddr := osx.MustSetenv("ADDR", "127.0.0.2")
 	defer restoreAdd()
 	defer restoreUser()
 	defer restorePass()
@@ -63,6 +64,17 @@ func Test_main(t *testing.T) {
 	t.Run("success-node-added", func(t *testing.T) {
 		main()
 	})
+
+	// Check the node that's been just added.
+	c, err := prov.FindCredentials(context.Background(), "mlab1d.lga0t.measurement-lab.org")
+	if err != nil {
+		t.Errorf("FindCredentials() returned error: %v", err)
+	}
+	if c.Hostname != "mlab1d.lga0t.measurement-lab.org" ||
+		c.Username != "username" || c.Password != "password" ||
+		c.Address != "127.0.0.2" || c.Model != "DRAC" {
+		t.Errorf("AddCredentials() didn't add the expected entity: %v", c)
+	}
 
 	// main() should exit if the node already exists.
 	osx.MustSetenv("NODE", "mlab4d.lga0t.measurement-lab.org")
