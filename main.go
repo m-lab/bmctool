@@ -60,7 +60,7 @@ func addCredentials() error {
 		Password: *bmcPass,
 	}
 
-	log.Infof("Adding credentials for host %v\n", *node)
+	log.Infof("Adding credentials for host %v", *node)
 	provider := credsNewProvider(*projectID, namespace)
 
 	// Provider.AddCredentials will create the entity regardless of whether it
@@ -68,7 +68,7 @@ func addCredentials() error {
 	// overriding the existing entity by mistake.
 	_, err := provider.FindCredentials(context.Background(), *node)
 	if err == nil {
-		log.Errorf("Credentials for hostname %v already exist\n", *node)
+		log.Errorf("Credentials for hostname %v already exist", *node)
 		osExit(1)
 	}
 
