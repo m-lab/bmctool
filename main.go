@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -75,11 +74,7 @@ func addCredentials() error {
 	rtx.Must(provider.AddCredentials(context.Background(), *node, creds),
 		"Error while adding Credentials")
 
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetEscapeHTML(false)
-	enc.SetIndent("", "  ")
-	rtx.Must(enc.Encode(creds), "Cannot marshal JSON output")
-
+	fmt.Print(creds)
 	return nil
 }
 
@@ -90,10 +85,7 @@ func printCredentials(host string) {
 	creds, err := provider.FindCredentials(context.Background(), *node)
 	rtx.Must(err, "Cannot fetch credentials")
 
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetEscapeHTML(false)
-	enc.SetIndent("", "  ")
-	rtx.Must(enc.Encode(creds), "Cannot marshal JSON output")
+	fmt.Print(creds)
 }
 
 func main() {
