@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -60,7 +59,7 @@ func addCredentials() error {
 		Password: *bmcPass,
 	}
 
-	log.Infof("Adding credentials for host %v\n", *node)
+	log.Infof("Adding credentials for host %v", *node)
 	provider := credsNewProvider(*projectID, namespace)
 
 	// Provider.AddCredentials will create the entity regardless of whether it
@@ -68,17 +67,14 @@ func addCredentials() error {
 	// overriding the existing entity by mistake.
 	_, err := provider.FindCredentials(context.Background(), *node)
 	if err == nil {
-		log.Errorf("Credentials for hostname %v already exist\n", *node)
+		log.Errorf("Credentials for hostname %v already exist", *node)
 		osExit(1)
 	}
 
 	rtx.Must(provider.AddCredentials(context.Background(), *node, creds),
 		"Error while adding Credentials")
 
-	jsonOutput, err := json.MarshalIndent(creds, "", "  ")
-	rtx.Must(err, "Cannot marshal JSON output")
-
-	fmt.Println(string(jsonOutput))
+	fmt.Print(creds)
 	return nil
 }
 
@@ -89,10 +85,7 @@ func printCredentials(host string) {
 	creds, err := provider.FindCredentials(context.Background(), *node)
 	rtx.Must(err, "Cannot fetch credentials")
 
-	jsonOutput, err := json.MarshalIndent(creds, "", "  ")
-	rtx.Must(err, "Cannot marshal JSON output")
-
-	fmt.Println(string(jsonOutput))
+	fmt.Print(creds)
 }
 
 func main() {
