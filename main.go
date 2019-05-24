@@ -4,7 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
+
+	stdlog "log"
 
 	"github.com/apex/log"
 	"github.com/m-lab/go/flagx"
@@ -91,7 +94,9 @@ func printCredentials(host string) {
 func main() {
 	flag.Usage = usage
 	flag.Parse()
+	stdlog.SetOutput(ioutil.Discard)
 	rtx.Must(flagx.ArgsFromEnv(flag.CommandLine), "Could not parse env vars")
+	stdlog.SetOutput(os.Stdout)
 
 	// No node specified, nothing to do.
 	if *node == "" {
