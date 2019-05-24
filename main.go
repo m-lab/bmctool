@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	defaultProjectID = "mlab-sandbox"
+	defaultProjectID = "mlab-oti"
 	namespace        = "reboot-api"
 )
 
