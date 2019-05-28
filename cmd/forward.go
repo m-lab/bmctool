@@ -86,7 +86,6 @@ func splitPorts(ports string) (int32, int32, error) {
 
 func forward(dstHost string) {
 
-	log.SetLevel(log.DebugLevel)
 	sshConfig := &ssh.ClientConfig{
 		User: sshUser,
 		Auth: []ssh.AuthMethod{
@@ -124,7 +123,7 @@ func forward(dstHost string) {
 			Remote: remoteEndpoint,
 		}
 
-		log.Debugf("Forwarding %s -> %s -> %s", localEndpoint, serverEndpoint, remoteEndpoint)
+		log.Infof("Forwarding %s -> %s -> %s", localEndpoint, serverEndpoint, remoteEndpoint)
 		go tunnel.Start()
 
 	}

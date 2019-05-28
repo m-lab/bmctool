@@ -1,7 +1,6 @@
 package tunnel
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"os"
@@ -46,14 +45,14 @@ func (tunnel *SSHTunnel) Start() error {
 func (tunnel *SSHTunnel) forward(localConn net.Conn) {
 	serverConn, err := ssh.Dial("tcp", tunnel.Server.String(), tunnel.Config)
 	if err != nil {
-		fmt.Printf("Server dial error: %s\n", err)
+		log.Errorf("Server dial error: %s", err)
 		return
 	}
 	defer serverConn.Close()
 
 	remoteConn, err := serverConn.Dial("tcp", tunnel.Remote.String())
 	if err != nil {
-		fmt.Printf("Remote dial error: %s\n", err)
+		log.Errorf("Remote dial error: %s", err)
 		return
 	}
 	defer remoteConn.Close()
