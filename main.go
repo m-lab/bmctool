@@ -1,6 +1,6 @@
 package main
 
-import "github.com/m-lab/bmctool-cobra/cmd"
+import "github.com/m-lab/bmctool/cmd"
 
 func main() {
 	cmd.Execute()
