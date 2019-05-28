@@ -55,7 +55,7 @@ func Test_addCredentials(t *testing.T) {
 		t.Errorf("AddCredentials() didn't add the expected entity: %v", c)
 	}
 
-	// bmctool add should fail if trying to add the same node again.
+	// addCredentials should fail if trying to add the same node again.
 	assert.PanicsWithValue(t, "os.Exit called", addCredentials,
 		"os.Exit was not called")
 
