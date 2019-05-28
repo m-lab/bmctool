@@ -29,6 +29,7 @@ type SSHTunnel struct {
 func (tunnel *SSHTunnel) Start() error {
 	listener, err := net.Listen("tcp", tunnel.Local.String())
 	if err != nil {
+		log.Errorf("Cannot listen on %s: %v", tunnel.Local, err)
 		return err
 	}
 	defer listener.Close()
@@ -36,6 +37,7 @@ func (tunnel *SSHTunnel) Start() error {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
+			log.Errorf("Cannot accept connection: %v", err)
 			return err
 		}
 		go tunnel.forward(conn)

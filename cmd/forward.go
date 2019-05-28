@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -99,6 +100,8 @@ func forward(dstHost string) {
 		Port: 22,
 	}
 
+	errs, _ := errgroup.WithContext(context.Background())
+
 	for _, port := range ports {
 		srcPort, dstPort, err := splitPorts(port)
 		if err != nil {
@@ -124,10 +127,9 @@ func forward(dstHost string) {
 		}
 
 		log.Infof("Forwarding %s -> %s -> %s", localEndpoint, serverEndpoint, remoteEndpoint)
-		go tunnel.Start()
+		errs.Go(tunnel.Start)
 
 	}
 
-	ctx := context.Background()
-	<-ctx.Done()
+	errs.Wait()
 }
