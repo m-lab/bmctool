@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/spf13/viper"
 
@@ -11,16 +10,6 @@ import (
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/reboot-service/creds"
 	"github.com/spf13/cobra"
-)
-
-var (
-	bmcUser, bmcPass string
-	bmcAddr, bmcHost string
-	projectID        string
-
-	// These allow for testing.
-	credsNewProvider = creds.NewProvider
-	osExit           = os.Exit
 )
 
 // addCmd represents the add command
@@ -36,7 +25,7 @@ to an appropriate value.`,
 		bmcHost = args[0]
 		bmcAddr = args[1]
 
-		rtx.Must(addCredentials(), "Error while adding credentials")
+		addCredentials()
 	},
 }
 
@@ -53,12 +42,7 @@ func init() {
 }
 
 // addCredentials adds a new BMC to Google Cloud Datastore.
-func addCredentials() error {
-	if bmcUser == "" || bmcPass == "" || bmcAddr == "" {
-		log.Error("bmcuser, bmcpassword and addr are required")
-		osExit(1)
-	}
-
+func addCredentials() {
 	creds := &creds.Credentials{
 		Address:  bmcAddr,
 		Hostname: bmcHost,
@@ -83,5 +67,4 @@ func addCredentials() error {
 		"Error while adding Credentials")
 
 	fmt.Print(creds)
-	return nil
 }
