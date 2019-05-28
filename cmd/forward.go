@@ -34,9 +34,13 @@ e.g.:
 
 bmctool forward <host> --port 4443:443 --port 5900
 
-If dest is unspecified, it'll be the same as
+If dest is unspecified, it'll be the same as src.
 
-The host to use for tunneling can be specified via the --tunnel-host flag.`,
+The host to use for tunneling can be specified via the --tunnel-host flag,
+or the BMCTUNNELHOST environment variable.
+
+The username to use to connect to the intermediate host can be specified via
+the --username flag, or the BMCTUNNELUSER environment variable.`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		dstHost := args[0]
@@ -47,11 +51,14 @@ The host to use for tunneling can be specified via the --tunnel-host flag.`,
 func init() {
 	rootCmd.AddCommand(forwardCmd)
 
+	viper.AutomaticEnv()
+
 	forwardCmd.Flags().StringArrayVar(&ports, "port", defaultPorts, "source:destination")
 	forwardCmd.Flags().StringVar(&tunnelHost, "tunnel-host",
 		viper.GetString("BMCTUNNELHOST"), "intermediate host")
 	forwardCmd.Flags().StringVar(&sshUser, "username",
 		viper.GetString("BMCTUNNELUSER"), "username for intermediate host")
+
 }
 
 // splitPorts takes a string containing either a "local:remote" ports pair
@@ -81,7 +88,7 @@ func forward(dstHost string) {
 
 	log.SetLevel(log.DebugLevel)
 	sshConfig := &ssh.ClientConfig{
-		User: "roberto",
+		User: sshUser,
 		Auth: []ssh.AuthMethod{
 			tunnel.SSHAgent(),
 		},
