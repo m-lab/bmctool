@@ -8,17 +8,16 @@ import (
 	"github.com/apex/log"
 	"github.com/m-lab/bmctool/tunnel"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh"
 )
 
-const (
-	defaultPorts      = ""
-	defaultTunnelHost = "eb.measurementlab.net"
-)
-
 var (
+	sshUser    string
 	ports      []string
 	tunnelHost string
+
+	defaultPorts = []string{"4443:443", "5900"}
 )
 
 var forwardCmd = &cobra.Command{
@@ -48,8 +47,11 @@ The host to use for tunneling can be specified via the --tunnel-host flag.`,
 func init() {
 	rootCmd.AddCommand(forwardCmd)
 
-	forwardCmd.Flags().StringArrayVar(&ports, "port", []string{"4443:443", "5900"}, "source:destination")
-	forwardCmd.Flags().StringVar(&tunnelHost, "tunnel-host", defaultTunnelHost, "host to tunnel through")
+	forwardCmd.Flags().StringArrayVar(&ports, "port", defaultPorts, "source:destination")
+	forwardCmd.Flags().StringVar(&tunnelHost, "tunnel-host",
+		viper.GetString("BMCTUNNELHOST"), "intermediate host")
+	forwardCmd.Flags().StringVar(&sshUser, "username",
+		viper.GetString("BMCTUNNELUSER"), "username for intermediate host")
 }
 
 // splitPorts takes a string containing either a "local:remote" ports pair
