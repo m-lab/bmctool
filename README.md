@@ -13,29 +13,29 @@ Output is provided in JSON format.
 
 ## Usage
 ### Common flags
-```-project <project_id>```
+```--project <project_id>```
 
 Use the specified `<project_id>` to connect to GCD.
 
 ### Fetch credentials
-```./bmctool <node>```
+```./bmctool get <host>```
 
-Retrieves the credentials for `<node>`.
+Retrieves the credentials for `<host>`.
 
 ### Add a new node
 (TODO)
 
-Set the shell variables `BMCUSER` and `BMCPASSWORD` to the appropriate values.
+Set the shell variables `BMCUSER` and `BMCPASS` to the appropriate values.
 
-```./bmctool -add <node> -addr <address>```
+```./bmctool add <host> <address>```
 
-Creates the node `<node>` with the provided `BMCUSER`, `BMCPASSWORD` and `<address>`. If the specified node already exists, the command will fail.
+Creates the node `<host>` with the provided `BMCUSER`, `BMCPASS` and `<address>`. If the specified node already exists, the command will fail.
 
 ### Update an existing node
 (TODO)
 
-Set the shell variables `BMCUSER` and `BMCPASSWORD` to the appropriate values.
+Set the shell variables `BMCUSER` and `BMCPASS` to the appropriate values.
 
-```./bmctool -update <node> -addr <address>```
+```./bmctool update <host> <address>```
 
-Update details for node `<node>`. If `<node>` does not exist, the command will fail.
+Update details for node `<host>`. If `<host>` does not exist, the command will fail.
