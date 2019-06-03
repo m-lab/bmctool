@@ -50,14 +50,12 @@ func (tunnel *SSHTunnel) forward(localConn net.Conn) {
 		log.Errorf("Server dial error: %s", err)
 		return
 	}
-	defer serverConn.Close()
 
 	remoteConn, err := serverConn.Dial("tcp", tunnel.Remote.String())
 	if err != nil {
 		log.Errorf("Remote dial error: %s", err)
 		return
 	}
-	defer remoteConn.Close()
 
 	copyConn := func(writer, reader net.Conn) {
 		_, err := io.Copy(writer, reader)

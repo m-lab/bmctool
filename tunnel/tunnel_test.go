@@ -12,14 +12,14 @@ import (
 )
 
 func TestSSHTunnel_Start(t *testing.T) {
-	sshserver.Handle(func(s sshserver.Session) {
+	handlerFunc := func(s sshserver.Session) {
 		io.WriteString(s, "test")
-	})
+	}
 
 	// Create intermediate SSH server.
-	bounceSSHListener, err := net.Listen("tcp", ":0")
+	bounceSSHListener, err := net.Listen("tcp", ":3000")
 	bounceSSHServer := &sshserver.Server{
-		Handler: nil,
+		Handler: handlerFunc,
 		LocalPortForwardingCallback: func(ctx sshserver.Context,
 			destinationHost string, destinationPort uint32) bool {
 			return true
@@ -33,12 +33,12 @@ func TestSSHTunnel_Start(t *testing.T) {
 	}()
 
 	// Create destination SSH server.
-	destSSHServer, err := net.Listen("tcp", ":0")
+	destSSHServer, err := net.Listen("tcp", "127.0.0.1:4000")
 	if err != nil {
 		t.Errorf("Cannot create listener: %v", err)
 	}
 	go func() {
-		log.Fatal(sshserver.Serve(destSSHServer, nil))
+		log.Fatal(sshserver.Serve(destSSHServer, handlerFunc))
 	}()
 
 	sshConfig := &ssh.ClientConfig{
@@ -52,7 +52,7 @@ func TestSSHTunnel_Start(t *testing.T) {
 	tun := &SSHTunnel{
 		Local: &Endpoint{
 			Host: "127.0.0.1",
-			Port: 0,
+			Port: 2000,
 		},
 		Server: &Endpoint{
 			Host: "127.0.0.1",
