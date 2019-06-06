@@ -18,7 +18,7 @@ func TestSSHTunnel_Start(t *testing.T) {
 	}
 
 	// Create intermediate SSH server.
-	bounceSSHListener, err := net.Listen("tcp", ":3000")
+	bounceSSHListener, err := net.Listen("tcp", ":0")
 	bounceSSHServer := &sshserver.Server{
 		Handler: handlerFunc,
 		LocalPortForwardingCallback: func(ctx sshserver.Context,
@@ -34,7 +34,7 @@ func TestSSHTunnel_Start(t *testing.T) {
 	}()
 
 	// Create destination SSH server.
-	destSSHServer, err := net.Listen("tcp", "127.0.0.1:4000")
+	destSSHServer, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Errorf("Cannot create listener: %v", err)
 	}
@@ -53,7 +53,7 @@ func TestSSHTunnel_Start(t *testing.T) {
 	tun := &SSHTunnel{
 		Local: &Endpoint{
 			Host: "127.0.0.1",
-			Port: 2000,
+			Port: int32(destSSHServer.Addr().(*net.TCPAddr).Port) + 1,
 		},
 		Server: &Endpoint{
 			Host: "127.0.0.1",
@@ -72,7 +72,7 @@ func TestSSHTunnel_Start(t *testing.T) {
 
 	// Connect to the tunnel and verify that the received message is the
 	// expected one from the remote server.
-	cl, err := ssh.Dial("tcp", "127.0.0.1:2000", sshConfig)
+	cl, err := ssh.Dial("tcp", tun.Local.String(), sshConfig)
 	if err != nil {
 		t.Errorf("Cannot connect to the local endpoint: %v", err)
 	}
