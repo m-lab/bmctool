@@ -1,11 +1,12 @@
 package tunnel
 
 import (
-	"context"
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"testing"
+	"time"
 
 	sshserver "github.com/gliderlabs/ssh"
 	"golang.org/x/crypto/ssh"
@@ -65,8 +66,58 @@ func TestSSHTunnel_Start(t *testing.T) {
 		Config: sshConfig,
 	}
 
-	tun.Start()
+	go func() { tun.Start() }()
 
-	<-context.Background().Done()
+	time.Sleep(2 * time.Second)
 
+	// Connect to the tunnel and verify that the received message is the
+	// expected one from the remote server.
+	cl, err := ssh.Dial("tcp", "127.0.0.1:2000", sshConfig)
+	if err != nil {
+		t.Errorf("Cannot connect to the local endpoint: %v", err)
+	}
+
+	sess, err := cl.NewSession()
+	if err != nil {
+		t.Errorf("Cannot create SSH session: %v", err)
+	}
+
+	sshin, err := sess.StdinPipe()
+	if err != nil {
+		t.Errorf("Cannot pipe stdout: %v", err)
+	}
+	sshout, err := sess.StdoutPipe()
+	if err != nil {
+		t.Errorf("Cannot pipe stdout: %v", err)
+	}
+
+	err = sess.Shell()
+	if err != nil {
+		t.Errorf("Cannot start shell: %v", err)
+	}
+
+	write(t, "configure", sshin)
+	output := readBuffForString(sshout)
+	if output != "test" {
+		t.Errorf("Unexpected output: %s", output)
+	}
+	fmt.Println("Done.")
+
+}
+
+func write(t *testing.T, cmd string, sshIn io.WriteCloser) {
+	_, err := sshIn.Write([]byte(cmd + "\r"))
+	if err != nil {
+		t.Errorf("Cannot write: %v", err)
+	}
+}
+
+func readBuffForString(sshOut io.Reader) string {
+	buf := make([]byte, 1000)
+	n, err := sshOut.Read(buf) //this reads the ssh terminal
+	waitingString := ""
+	if err == nil {
+		waitingString = string(buf[:n])
+	}
+	return waitingString
 }

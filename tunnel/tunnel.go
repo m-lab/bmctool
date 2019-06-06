@@ -3,11 +3,9 @@ package tunnel
 import (
 	"io"
 	"net"
-	"os"
 
 	"github.com/apex/log"
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/agent"
 )
 
 // SSHTunnel represents an SSH tunnel.
@@ -70,8 +68,8 @@ func (tunnel *SSHTunnel) forward(localConn net.Conn) {
 
 // SSHAgent gets a ssh.AuthMethod from the local ssh-agent instance (if any).
 func SSHAgent() ssh.AuthMethod {
-	if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
-		return ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers)
-	}
+	//if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
+	//return ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers)
+	//	}
 	return nil
 }
