@@ -27,7 +27,7 @@ func TestSSHTunnel_Start(t *testing.T) {
 		},
 	}
 	if err != nil {
-		t.Errorf("Cannot create listener: %v", err)
+		t.Fatalf("Cannot create listener: %v", err)
 	}
 	go func() {
 		log.Fatal(bounceSSHServer.Serve(bounceSSHListener))
@@ -36,7 +36,7 @@ func TestSSHTunnel_Start(t *testing.T) {
 	// Create destination SSH server.
 	destSSHServer, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		t.Errorf("Cannot create listener: %v", err)
+		t.Fatalf("Cannot create listener: %v", err)
 	}
 	go func() {
 		log.Fatal(sshserver.Serve(destSSHServer, handlerFunc))
@@ -74,42 +74,30 @@ func TestSSHTunnel_Start(t *testing.T) {
 	// expected one from the remote server.
 	cl, err := ssh.Dial("tcp", tun.Local.String(), sshConfig)
 	if err != nil {
-		t.Errorf("Cannot connect to the local endpoint: %v", err)
+		t.Fatalf("Cannot connect to the local endpoint: %v", err)
 	}
 
 	sess, err := cl.NewSession()
 	if err != nil {
-		t.Errorf("Cannot create SSH session: %v", err)
+		t.Fatalf("Cannot create SSH session: %v", err)
 	}
 
-	sshin, err := sess.StdinPipe()
-	if err != nil {
-		t.Errorf("Cannot pipe stdout: %v", err)
-	}
 	sshout, err := sess.StdoutPipe()
 	if err != nil {
-		t.Errorf("Cannot pipe stdout: %v", err)
+		t.Fatalf("Cannot pipe stdout: %v", err)
 	}
 
 	err = sess.Shell()
 	if err != nil {
-		t.Errorf("Cannot start shell: %v", err)
+		t.Fatalf("Cannot start shell: %v", err)
 	}
 
-	write(t, "configure", sshin)
 	output := readBuffForString(sshout)
 	if output != "test" {
-		t.Errorf("Unexpected output: %s", output)
+		t.Fatalf("Unexpected output: %s", output)
 	}
 	fmt.Println("Done.")
 
-}
-
-func write(t *testing.T, cmd string, sshIn io.WriteCloser) {
-	_, err := sshIn.Write([]byte(cmd + "\r"))
-	if err != nil {
-		t.Errorf("Cannot write: %v", err)
-	}
 }
 
 func readBuffForString(sshOut io.Reader) string {
