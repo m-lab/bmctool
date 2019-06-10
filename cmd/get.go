@@ -31,7 +31,7 @@ func init() {
 // in JSON format.
 func printCredentials(host string) {
 	provider := credsNewProvider(projectID, namespace)
-	creds, err := provider.FindCredentials(context.Background(), host)
+	creds, err := provider.FindCredentials(context.Background(), makeBMCHostname(host))
 	rtx.Must(err, "Cannot fetch credentials")
 
 	fmt.Print(creds)

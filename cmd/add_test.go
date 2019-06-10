@@ -38,18 +38,19 @@ func Test_addCredentials(t *testing.T) {
 	}
 
 	// addCredentials should successfully add a new node.
-	bmcHost = "testnode"
+	// The hostname is intentionally provided with the short name here.
+	bmcHost = "mlab1.lga0t"
 	bmcAddr = "127.0.0.1"
 	bmcUser = "user"
 	bmcPass = "pass"
 	addCredentials()
 
 	// Check the node that's been just added.
-	c, err := prov.FindCredentials(context.Background(), "testnode")
+	c, err := prov.FindCredentials(context.Background(), "mlab1d.lga0t.measurement-lab.org")
 	if err != nil {
 		t.Errorf("FindCredentials() returned error: %v", err)
 	}
-	if c.Hostname != "testnode" ||
+	if c.Hostname != "mlab1d.lga0t.measurement-lab.org" ||
 		c.Username != "user" || c.Password != "pass" ||
 		c.Address != "127.0.0.1" || c.Model != "DRAC" {
 		t.Errorf("AddCredentials() didn't add the expected entity: %v", c)
