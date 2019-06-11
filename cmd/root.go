@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"regexp"
 
+	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/reboot-service/creds"
 	"github.com/spf13/cobra"
 )
@@ -45,4 +47,34 @@ func init() {
 	// as global ("Persistent") flag here.
 	rootCmd.PersistentFlags().StringVar(&projectID, "project", defaultProjectID,
 		"Project ID to use")
+}
+
+// parseNodeSite extracts node and site from a full hostname.
+func parseNodeSite(hostname string) (string, string, error) {
+	regex := regexp.MustCompile("(mlab[1-4]d?)\\.([a-zA-Z]{3}[0-9t]{2}).*")
+	result := regex.FindStringSubmatch(hostname)
+	if len(result) != 3 {
+		return "", "",
+			fmt.Errorf("The specified hostname is not a valid M-Lab node: %s", hostname)
+	}
+
+	return result[1], result[2], nil
+}
+
+// makeBMCHostname returns a full BMC hostname. There are different ways the
+// hostname can be provided:
+// - mlab1.lga0t
+// - mlab1d.lga0t
+// - mlab1.lga0t.measurement-lab.org
+// - mlab1d.lga0t.measurement-lab.org
+// This function returns the full hostname in any of these cases
+func makeBMCHostname(name string) string {
+	node, site, err := parseNodeSite(name)
+	rtx.Must(err, "Cannot extract BMC hostname")
+
+	// All the BMC hostnames must end with "d".
+	if node[len(node)-1:] != "d" {
+		node = node + "d"
+	}
+	return fmt.Sprintf("%s.%s.measurement-lab.org", node, site)
 }

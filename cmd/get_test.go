@@ -12,7 +12,7 @@ func Test_printCredentials(t *testing.T) {
 	// Create fake Credentials.
 	fakeCreds := &creds.Credentials{
 		Address:  "127.0.0.1",
-		Hostname: "mlab4.lga0t.measurement-lab.org",
+		Hostname: "mlab4d.lga0t.measurement-lab.org",
 		Username: "username",
 		Password: "password",
 		Model:    "DRAC",
@@ -27,7 +27,8 @@ func Test_printCredentials(t *testing.T) {
 		return prov
 	}
 
-	printCredentials("mlab4d.lga0t.measurement-lab.org")
+	// printCredentials is intentionally called with a short name here.
+	printCredentials("mlab4.lga0t")
 
 	credsNewProvider = oldCredsNewProvider
 }

@@ -43,6 +43,7 @@ func init() {
 
 // addCredentials adds a new BMC to Google Cloud Datastore.
 func addCredentials() {
+	bmcHost = makeBMCHostname(bmcHost)
 	creds := &creds.Credentials{
 		Address:  bmcAddr,
 		Hostname: bmcHost,
