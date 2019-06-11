@@ -20,6 +20,10 @@ func Test_makeBMCHostname(t *testing.T) {
 			want: "mlab1d.lga0t.measurement-lab.org",
 		},
 		{
+			name: "mlab1d.lga0t.measurement-lab.org",
+			want: "mlab1d.lga0t.measurement-lab.org",
+		},
+		{
 			name: "mlab1d.lga0t.blah",
 			want: "mlab1d.lga0t.measurement-lab.org",
 		},
