@@ -86,6 +86,7 @@ func splitPorts(ports string) (int32, int32, error) {
 }
 
 func forward(dstHost string) {
+	dstHost = makeBMCHostname(dstHost)
 
 	sshConfig := &ssh.ClientConfig{
 		User: sshUser,
