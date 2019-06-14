@@ -25,6 +25,7 @@ func NewTestClient(fn RoundTripFunc) *http.Client {
 
 func Test_reboot(t *testing.T) {
 	// Replace osExit so that tests don't stop running.
+	oldOsExit := osExit
 	osExit = func(code int) {
 		if code != 1 {
 			t.Fatalf("Expected a 1 exit code, got %d.", code)
@@ -36,10 +37,12 @@ func Test_reboot(t *testing.T) {
 	assert.PanicsWithValue(t, "os.Exit called", func() {
 		reboot("mlab1d.lga0t.measurement-lab.org")
 	}, "os.Exit was not called")
+	osExit = oldOsExit
 
 	rebootAPIURL = "dummy"
 
-	// Set up the RoundTripFunc to return values useful for testing.
+	// Set up a http.Client that returns values useful for testing.
+	oldHTTPClient := httpClient
 	httpClient = NewTestClient(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -48,6 +51,6 @@ func Test_reboot(t *testing.T) {
 			Header: make(http.Header),
 		}
 	})
-
 	reboot("mlab1d.lga0t.measurement-lab.org")
+	httpClient = oldHTTPClient
 }
