@@ -3,6 +3,7 @@ package cmd
 import (
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/apex/log"
 	"github.com/m-lab/go/rtx"
@@ -10,7 +11,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-const rebootEndpoint = "/v1/reboot"
+const (
+	rebootEndpoint = "/v1/reboot"
+	defaultTimeout = 1 * time.Minute
+)
 
 var (
 	rebootAPIURL string
@@ -28,7 +32,9 @@ The reboot-api-url flag can be also provided via the REBOOTAPIURL environment va
 		},
 	}
 
-	httpPost = http.Post
+	httpClient = &http.Client{
+		Timeout: defaultTimeout,
+	}
 )
 
 func init() {
@@ -51,7 +57,7 @@ func reboot(host string) {
 	fullURL := rebootAPIURL + rebootEndpoint + "?host=" + host
 
 	log.Infof("POST %s", fullURL)
-	resp, err := httpPost(fullURL, "text/plain", nil)
+	resp, err := httpClient.Post(fullURL, "text/plain", nil)
 	rtx.Must(err, "Cannot send reboot request")
 
 	defer resp.Body.Close()
