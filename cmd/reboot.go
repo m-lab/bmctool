@@ -17,15 +17,18 @@ var (
 
 	// rebootCmd represents the reboot command
 	rebootCmd = &cobra.Command{
-		Use:   "reboot",
+		Use:   "reboot <hostname>",
 		Short: "Reboot a BMC using the Reboot API",
 		Long: `This command sends a POST request to the Reboot API to reboot the provided node.
+
 The reboot-api-url flag can be also provided via the REBOOTAPIURL environment variable.`,
 		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			reboot(args[0])
 		},
 	}
+
+	httpPost = http.Post
 )
 
 func init() {
@@ -38,12 +41,17 @@ func init() {
 }
 
 func reboot(host string) {
+	// Make sure the Reboot API URL has been provided.
+	if rebootAPIURL == "" {
+		log.Error("The Reboot API URL must be specified (see bmctool help reboot).")
+		osExit(1)
+	}
 	// Make sure the provided host is a valid M-Lab BMC.
 	host = makeBMCHostname(host)
 	fullURL := rebootAPIURL + rebootEndpoint + "?host=" + host
 
 	log.Infof("POST %s", fullURL)
-	resp, err := http.Post(fullURL, "text/plain", nil)
+	resp, err := httpPost(fullURL, "text/plain", nil)
 	rtx.Must(err, "Cannot send reboot request")
 
 	defer resp.Body.Close()
