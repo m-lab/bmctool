@@ -3,7 +3,10 @@ package cmd
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,16 +37,23 @@ func Test_reboot(t *testing.T) {
 		panic("os.Exit called")
 	}
 	// If REBOOTAPIURL isn't set, reboot() should fail.
+	rebootAPIURL = ""
 	assert.PanicsWithValue(t, "os.Exit called", func() {
 		reboot("mlab1d.lga0t.measurement-lab.org")
 	}, "os.Exit was not called")
-	osExit = oldOsExit
-
 	rebootAPIURL = "dummy"
 
 	// Set up a http.Client that returns values useful for testing.
 	oldHTTPClient := httpClient
 	httpClient = NewTestClient(func(req *http.Request) *http.Response {
+		if strings.Contains(req.URL.String(), "mlab4d") {
+			return &http.Response{
+				StatusCode: http.StatusInternalServerError,
+				Body: ioutil.NopCloser(bytes.NewBufferString(
+					"This is an error.")),
+				Header: make(http.Header),
+			}
+		}
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body: ioutil.NopCloser(bytes.NewBufferString(
@@ -51,6 +61,23 @@ func Test_reboot(t *testing.T) {
 			Header: make(http.Header),
 		}
 	})
+
+	// Rebooting an mlab4 will always fail.
+	assert.PanicsWithValue(t, "os.Exit called", func() {
+		reboot("mlab4d.lga0t.measurement-lab.org")
+	}, "os.Exit was not called")
+
+	// Successful reboot, stdout should contain the expected message.
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
 	reboot("mlab1d.lga0t.measurement-lab.org")
+	log.SetOutput(os.Stderr)
+
+	if !strings.Contains(buf.String(), "Server power operation successful.") {
+		t.Errorf("Unexpected output: %s", buf.String())
+	}
+
 	httpClient = oldHTTPClient
+	osExit = oldOsExit
+
 }

@@ -65,5 +65,10 @@ func reboot(host string) {
 	body, err := ioutil.ReadAll(resp.Body)
 	rtx.Must(err, "Cannot read response from %s")
 
-	log.Info(string(body))
+	if resp.StatusCode != http.StatusOK {
+		log.Errorf("Reboot failed (status code %d): %s", resp.StatusCode, string(body))
+		osExit(1)
+	}
+
+	log.Infof(string(body))
 }
