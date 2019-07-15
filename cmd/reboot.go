@@ -44,6 +44,7 @@ func init() {
 
 	rebootCmd.Flags().StringVar(&rebootAPIURL, "reboot-api-url",
 		viper.GetString("REBOOTAPIURL"), "Reboot API URL")
+
 }
 
 func reboot(host string) {

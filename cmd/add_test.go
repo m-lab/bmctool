@@ -60,5 +60,11 @@ func Test_addCredentials(t *testing.T) {
 	assert.PanicsWithValue(t, "os.Exit called", addCredentials,
 		"os.Exit was not called")
 
+	// bmctool add should fail if bmcUser or bmcPass are empty.
+	bmcUser = ""
+	bmcPass = ""
+	assert.PanicsWithValue(t, "os.Exit called", addCredentials,
+		"os.Exit was not called")
+
 	credsNewProvider = oldCredsNewProvider
 }

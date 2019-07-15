@@ -86,6 +86,10 @@ func splitPorts(ports string) (int32, int32, error) {
 }
 
 func forward(dstHost string) {
+	if tunnelHost == "" || sshUser == "" {
+		log.Error("BMCTUNNELHOST and BMCTUNNELUSER must not be empty.")
+		osExit(1)
+	}
 	dstHost = makeBMCHostname(dstHost)
 
 	sshConfig := &ssh.ClientConfig{

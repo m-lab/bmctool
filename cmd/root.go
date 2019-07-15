@@ -16,9 +16,7 @@ const (
 )
 
 var (
-	bmcUser, bmcPass string
-	bmcAddr, bmcHost string
-	projectID        string
+	projectID string
 
 	// These allow for testing.
 	credsNewProvider = creds.NewProvider
