@@ -13,36 +13,44 @@ import (
 )
 
 // addCmd represents the add command
-var addCmd = &cobra.Command{
-	Use:   "add <hostname> <address>",
-	Short: "Add a new BMC",
-	Long: `This command creates a new Credentials entity on GCD.
+var (
+	bmcUser, bmcPass string
+	bmcHost, bmcAddr string
+	addCmd           = &cobra.Command{
+		Use:   "add <hostname> <address>",
+		Short: "Add a new BMC",
+		Long: `This command creates a new Credentials entity on GCD.
 
 To use it, you also need to set the BMCUSER and BMCPASS environment variables
 to an appropriate value.`,
-	Args: cobra.MinimumNArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		bmcHost = args[0]
-		bmcAddr = args[1]
+		Args: cobra.MinimumNArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			bmcHost = args[0]
+			bmcAddr = args[1]
 
-		addCredentials()
-	},
-}
+			addCredentials()
+		},
+	}
+)
 
 func init() {
 	rootCmd.AddCommand(addCmd)
+
+	viper.AutomaticEnv()
 
 	addCmd.Flags().StringVar(&bmcUser, "bmcuser", viper.GetString("BMCUSER"),
 		"BMC username")
 	addCmd.Flags().StringVar(&bmcPass, "bmcpass", viper.GetString("BMCPASS"),
 		"BMC password")
 
-	addCmd.MarkFlagRequired("bmcuser")
-	addCmd.MarkFlagRequired("bmcpass")
 }
 
 // addCredentials adds a new BMC to Google Cloud Datastore.
 func addCredentials() {
+	if bmcUser == "" || bmcPass == "" {
+		log.Error("BMCUSER and BMCPASS must not be empty.")
+		osExit(1)
+	}
 	bmcHost = makeBMCHostname(bmcHost)
 	creds := &creds.Credentials{
 		Address:  bmcAddr,
