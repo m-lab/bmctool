@@ -2,14 +2,13 @@ package cmd
 
 import (
 	"context"
+	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/m-lab/bmctool/tunnel"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/crypto/ssh"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -88,19 +87,6 @@ func splitPorts(ports string) (int32, int32, error) {
 func forward(dstHost string) {
 	dstHost = makeBMCHostname(dstHost)
 
-	sshConfig := &ssh.ClientConfig{
-		User: sshUser,
-		Auth: []ssh.AuthMethod{
-			tunnel.SSHAgent(),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
-
-	serverEndpoint := &tunnel.Endpoint{
-		Host: tunnelHost,
-		Port: 22,
-	}
-
 	errs, _ := errgroup.WithContext(context.Background())
 
 	for _, port := range ports {
@@ -110,27 +96,21 @@ func forward(dstHost string) {
 			osExit(1)
 		}
 
-		localEndpoint := &tunnel.Endpoint{
-			Host: "localhost",
-			Port: srcPort,
-		}
+		log.Infof("Running ssh -N -q " + tunnelHost + " -L" +
+			strconv.FormatInt(int64(srcPort), 10) + ":" + dstHost + ":" +
+			strconv.FormatInt(int64(dstPort), 10))
 
-		remoteEndpoint := &tunnel.Endpoint{
-			Host: dstHost,
-			Port: dstPort,
-		}
+		cmd := exec.Command("ssh", "-N", "-q", tunnelHost, "-L"+
+			strconv.FormatInt(int64(srcPort), 10)+":"+dstHost+":"+
+			strconv.FormatInt(int64(dstPort), 10))
 
-		tunnel := &tunnel.SSHTunnel{
-			Config: sshConfig,
-			Local:  localEndpoint,
-			Server: serverEndpoint,
-			Remote: remoteEndpoint,
-		}
-
-		log.Infof("Forwarding %s -> %s -> %s", localEndpoint, serverEndpoint, remoteEndpoint)
-		errs.Go(tunnel.Start)
-
+		errs.Go(func() error {
+			return cmd.Run()
+		})
 	}
 
-	errs.Wait()
+	err := errs.Wait()
+	if err != nil {
+		log.Errorf("Error while running ssh command: %v", err)
+	}
 }
