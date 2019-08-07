@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/reboot-service/creds"
@@ -12,7 +13,8 @@ import (
 
 const (
 	namespace        = "reboot-api"
-	defaultProjectID = "mlab-oti"
+	prodProjectID    = "mlab-oti"
+	stagingProjectID = "mlab-staging"
 )
 
 var (
@@ -43,7 +45,7 @@ func Execute() {
 func init() {
 	// The --project flag is used by several commands, thus it's defined
 	// as global ("Persistent") flag here.
-	rootCmd.PersistentFlags().StringVar(&projectID, "project", defaultProjectID,
+	rootCmd.PersistentFlags().StringVar(&projectID, "project", "",
 		"Project ID to use")
 }
 
@@ -75,4 +77,13 @@ func makeBMCHostname(name string) string {
 		node = node + "d"
 	}
 	return fmt.Sprintf("%s.%s.measurement-lab.org", node, site)
+}
+
+// getProjectID returns the staging GCP project if the hostname contains
+// "mlab4", or the production project otherwise.
+func getProjectID(host string) string {
+	if strings.Contains(host, "mlab4") {
+		return stagingProjectID
+	}
+	return prodProjectID
 }
