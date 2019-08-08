@@ -55,6 +55,11 @@ func Test_getProjectID(t *testing.T) {
 			host: "mlab4.abc01.measurement-lab.org",
 			want: "mlab-staging",
 		},
+		{
+			name: "sandbox-node",
+			host: "mlab4.abc0t.measurement-lab.org",
+			want: "mlab-sandbox",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

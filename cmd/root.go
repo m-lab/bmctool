@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strings"
 
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/reboot-service/creds"
@@ -15,10 +14,14 @@ const (
 	namespace        = "reboot-api"
 	prodProjectID    = "mlab-oti"
 	stagingProjectID = "mlab-staging"
+	sandboxProjectID = "mlab-sandbox"
 )
 
 var (
 	projectID string
+
+	sandboxRegex = regexp.MustCompile("^mlab[1-4]d?\\.[a-zA-Z]{3}[0-9]t.*")
+	stagingRegex = regexp.MustCompile("^mlab4d?\\.[a-zA-Z]{3}[0-9]{2}.*")
 
 	// These allow for testing.
 	credsNewProvider = creds.NewProvider
@@ -79,11 +82,14 @@ func makeBMCHostname(name string) string {
 	return fmt.Sprintf("%s.%s.measurement-lab.org", node, site)
 }
 
-// getProjectID returns the staging GCP project if the hostname contains
-// "mlab4", or the production project otherwise.
+// getProjectID returns the correct GCP project to use based on the hostname.
 func getProjectID(host string) string {
-	if strings.Contains(host, "mlab4") {
+	if sandboxRegex.MatchString(host) {
+		return sandboxProjectID
+	}
+	if stagingRegex.MatchString(host) {
 		return stagingProjectID
 	}
+
 	return prodProjectID
 }
