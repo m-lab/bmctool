@@ -20,8 +20,8 @@ const (
 var (
 	projectID string
 
-	sandboxRegex = regexp.MustCompile("^mlab[1-4]d?\\.[a-zA-Z]{3}[0-9]t.*")
-	stagingRegex = regexp.MustCompile("^mlab4d?\\.[a-zA-Z]{3}[0-9]{2}.*")
+	sandboxRegex = regexp.MustCompile("[a-zA-Z]{3}[0-9]t")
+	stagingRegex = regexp.MustCompile("^mlab4")
 
 	// These allow for testing.
 	credsNewProvider = creds.NewProvider
