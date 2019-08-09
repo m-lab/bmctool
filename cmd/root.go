@@ -12,11 +12,16 @@ import (
 
 const (
 	namespace        = "reboot-api"
-	defaultProjectID = "mlab-oti"
+	prodProjectID    = "mlab-oti"
+	stagingProjectID = "mlab-staging"
+	sandboxProjectID = "mlab-sandbox"
 )
 
 var (
 	projectID string
+
+	sandboxRegex = regexp.MustCompile("[a-zA-Z]{3}[0-9]t")
+	stagingRegex = regexp.MustCompile("^mlab4")
 
 	// These allow for testing.
 	credsNewProvider = creds.NewProvider
@@ -43,7 +48,7 @@ func Execute() {
 func init() {
 	// The --project flag is used by several commands, thus it's defined
 	// as global ("Persistent") flag here.
-	rootCmd.PersistentFlags().StringVar(&projectID, "project", defaultProjectID,
+	rootCmd.PersistentFlags().StringVar(&projectID, "project", "",
 		"Project ID to use")
 }
 
@@ -75,4 +80,16 @@ func makeBMCHostname(name string) string {
 		node = node + "d"
 	}
 	return fmt.Sprintf("%s.%s.measurement-lab.org", node, site)
+}
+
+// getProjectID returns the correct GCP project to use based on the hostname.
+func getProjectID(host string) string {
+	if sandboxRegex.MatchString(host) {
+		return sandboxProjectID
+	}
+	if stagingRegex.MatchString(host) {
+		return stagingProjectID
+	}
+
+	return prodProjectID
 }

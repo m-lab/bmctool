@@ -15,7 +15,8 @@ var getCmd = &cobra.Command{
 	Long: `This command gets a Credentials entity for a given BMC from Google
 Cloud Datastore.
 
-The GCP project to use can be specified by providing the --project flag.`,
+The GCP project to use can be specified by providing the --project flag,
+otherwise it will be inferred by the node name.`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		host := args[0]
@@ -30,8 +31,13 @@ func init() {
 // printCredentials retrieves credentials for a given hostname and prints them
 // in JSON format.
 func printCredentials(host string) {
+	bmcHost := makeBMCHostname(host)
+	if projectID == "" {
+		projectID = getProjectID(bmcHost)
+	}
+
 	provider := credsNewProvider(projectID, namespace)
-	creds, err := provider.FindCredentials(context.Background(), makeBMCHostname(host))
+	creds, err := provider.FindCredentials(context.Background(), bmcHost)
 	rtx.Must(err, "Cannot fetch credentials")
 
 	fmt.Print(creds)

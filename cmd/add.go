@@ -51,7 +51,12 @@ func addCredentials() {
 		log.Error("BMCUSER and BMCPASS must not be empty.")
 		osExit(1)
 	}
+
 	bmcHost = makeBMCHostname(bmcHost)
+	if projectID == "" {
+		projectID = getProjectID(bmcHost)
+	}
+
 	creds := &creds.Credentials{
 		Address:  bmcAddr,
 		Hostname: bmcHost,
