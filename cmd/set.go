@@ -15,8 +15,9 @@ var (
 	setCmd = &cobra.Command{
 		Use:   "set <hostname>",
 		Short: "Updates the Credentials entity for the specified hostname",
-		Long:  `This command updates the Credentials entity on GCD.`,
-		Args:  cobra.MinimumNArgs(1),
+		Long: `This command updates the Credentials entity on GCD. If the flag
+corresponding to a field is not specified, that field will not be updated.`,
+		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			bmcHost = args[0]
 			setCredentials()
