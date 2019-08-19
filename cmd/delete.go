@@ -35,6 +35,10 @@ func deleteCredentials() {
 	provider := credsNewProvider(projectID, namespace)
 
 	err := provider.DeleteCredentials(context.Background(), bmcHost)
+	// Note: Deleting a key from Datastore does not return a NoSuchEntity error
+	// if the specified key does not exist, thus the error will be nil unless
+	// something else goes wrong during the deletion.
+	// See: https://github.com/googleapis/google-cloud-go/issues/501
 	if err != nil {
 		log.Errorf("Cannot delete credentials for %s: %v", bmcHost, err)
 		osExit(1)
