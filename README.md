@@ -22,6 +22,13 @@ If an entity is created or updated, output is provided in JSON format.
 
 Overrides the auto-detected project ID (based on the hostname format) with the specified `<project_id>`.
 
+If the project is not specified, it is inferred based on the hostname format. The regular expressions used to determine the project are the following, in decreasing priority order:
+
+1. Sandbox: `[a-zA-Z]{3}[0-9]t` (e.g. `mlab1.lga0t`)
+2. Staging: `^mlab4` (e.g. `mlab4.lga05`)
+3. Production: anything that does not match the previous ones
+
+
 ### Fetch credentials
 
 ```bmctool get <host>```
@@ -65,4 +72,8 @@ Logs into the BMC for `<host>` and reboots the node. Credentials are fetched fro
 
 ```bmctool forward <host>```
 
-Runs the system-wide SSH command to connect to a bastion host and forward ports to the BMC. This is normally used to access the BMC's web interface and its Virtual Console, thus the default behavior is to map ports 4443 -> 443 (to not require root privileges) and 5900 -> 5900. For a list of the available options:  `bmctool forward --help`.
+Runs the system-wide SSH command to connect to an authorized host and forward ports to the BMC.
+
+Access to M-Lab's BMCs is restricted to a set of IP addresses, thus the only way to log into them is to connect from those.
+
+This is normally used to access the BMC's web interface and its Virtual Console, thus the default behavior is to map ports 4443 -> 443 (to not require root privileges) and 5900 -> 5900. For a list of the available options:  `bmctool forward --help`.
