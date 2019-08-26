@@ -33,8 +33,8 @@ func Test_addCredentials(t *testing.T) {
 	// Set up a FakeProvider with fake credentials.
 	prov := credstest.NewProvider()
 	prov.AddCredentials(context.Background(), "mlab4d.lga0t.measurement-lab.org", fakeCreds)
-	credsNewProvider = func(string, string) creds.Provider {
-		return prov
+	credsNewProvider = func(creds.Connector, string, string) (creds.Provider, error) {
+		return prov, nil
 	}
 
 	// addCredentials should successfully add a new node.

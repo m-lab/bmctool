@@ -23,8 +23,8 @@ func Test_printCredentials(t *testing.T) {
 	// Set up a FakeProvider with fake credentials.
 	prov := credstest.NewProvider()
 	prov.AddCredentials(context.Background(), "mlab4d.lga0t.measurement-lab.org", fakeCreds)
-	credsNewProvider = func(string, string) creds.Provider {
-		return prov
+	credsNewProvider = func(creds.Connector, string, string) (creds.Provider, error) {
+		return prov, nil
 	}
 
 	// printCredentials is intentionally called with a short name here.
