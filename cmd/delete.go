@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 
+	"github.com/m-lab/go/rtx"
+	"github.com/m-lab/reboot-service/creds"
+
 	"github.com/apex/log"
 	"github.com/spf13/cobra"
 )
@@ -32,9 +35,11 @@ func deleteCredentials() {
 	}
 
 	log.Infof("Deleting credentials for host %v", bmcHost)
-	provider := credsNewProvider(projectID, namespace)
+	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
+	rtx.Must(err, "Cannot connect to Datastore")
+	provider.Close()
 
-	err := provider.DeleteCredentials(context.Background(), bmcHost)
+	err = provider.DeleteCredentials(context.Background(), bmcHost)
 	// Note: Deleting a key from Datastore does not return a NoSuchEntity error
 	// if the specified key does not exist, thus the error will be nil unless
 	// something else goes wrong during the deletion.

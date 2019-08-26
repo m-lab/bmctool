@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/m-lab/reboot-service/creds"
+
 	"github.com/m-lab/go/rtx"
 	"github.com/spf13/viper"
 
@@ -46,7 +48,9 @@ func setCredentials() {
 	}
 
 	log.Infof("Updating credentials for host %v", bmcHost)
-	provider := credsNewProvider(projectID, namespace)
+	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
+	rtx.Must(err, "Cannot connect to Datastore")
+	defer provider.Close()
 
 	creds, err := provider.FindCredentials(context.Background(), bmcHost)
 	if err != nil {
