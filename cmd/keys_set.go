@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,13 +15,16 @@ import (
 )
 
 const (
-	defaultBMCPort = 806
-	bmcTimeout     = 30 * time.Second
-	adminIdx       = 2 // Index for the 'admin' user on DRACs
+	defaultBMCPort   = 806
+	defaultLocalPort = 8060
+	bmcTimeout       = 30 * time.Second
+	adminIdx         = 2 // Index for the 'admin' user on DRACs
 )
 
 var (
-	bmcPort int32
+	bmcPort   int32
+	localPort int32
+	useTunnel bool
 	// keysSetCmd represents the keys set command
 	keysSetCmd = &cobra.Command{
 		Use:   "set <host> <index> <key>",
@@ -35,8 +39,12 @@ var (
 func init() {
 	keysCmd.AddCommand(keysSetCmd)
 
-	addCmd.Flags().Int32Var(&bmcPort, "bmcport", defaultBMCPort,
+	keysSetCmd.Flags().Int32Var(&bmcPort, "bmcport", defaultBMCPort,
 		"BMC port to use")
+	keysSetCmd.Flags().BoolVar(&useTunnel, "tunnel", false,
+		"Tunnel through an intermediate host")
+	keysSetCmd.Flags().Int32Var(&localPort, "localport", defaultLocalPort,
+		"Local port to use when tunneling with -tunnel")
 }
 
 func setKey(host, idx, key string) {
@@ -57,12 +65,28 @@ func setKey(host, idx, key string) {
 
 	// Make a connection to the host
 	connectionConfig := &connector.ConnectionConfig{
-		Hostname: creds.Address,
+		Hostname: bmcHost,
 		Username: creds.Username,
 		Password: creds.Password,
 		Port:     bmcPort,
 		ConnType: connector.BMCConnection,
 		Timeout:  bmcTimeout,
+	}
+
+	if useTunnel {
+		go func() {
+			ports = []string{
+				strconv.Itoa(int(localPort)) + ":" + strconv.Itoa(int(bmcPort)),
+			}
+			forward(bmcHost)
+		}()
+		connectionConfig.Hostname = "127.0.0.1"
+		connectionConfig.Port = 8060
+		// TODO: how to make this more robust? The ssh client is invoked as an
+		// external process, probably the only way of knowing if the connection
+		// has been established is to check the process' output and send a
+		// signal back through a channel.
+		time.Sleep(5000)
 	}
 
 	conn, err := connector.NewConnector().NewConnection(connectionConfig)
