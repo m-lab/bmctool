@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -75,18 +74,16 @@ func setKey(host, idx, key string) {
 	}
 
 	if useTunnel {
-		ports = []string{
-			strconv.Itoa(int(localPort)) + ":" + strconv.Itoa(int(bmcPort)),
+		ports := []forwarder.Port{
+			{
+				Src: int(localPort),
+				Dst: int(bmcPort),
+			},
 		}
-		sshForwarder := forwarder.NewSSHForwarder(tunnelHost, bmcHost, ports)
+		sshForwarder := forwarder.New(tunnelHost, bmcHost, ports)
 		sshForwarder.Start(context.Background())
 		connectionConfig.Hostname = "127.0.0.1"
 		connectionConfig.Port = 8060
-		// TODO: how to make this more robust? The ssh client is invoked as an
-		// external process, probably the only way of knowing if the connection
-		// has been established is to check the process' output and send a
-		// signal back through a channel.
-		time.Sleep(3000)
 	}
 
 	conn, err := connector.NewConnector().NewConnection(connectionConfig)

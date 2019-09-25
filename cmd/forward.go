@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"strconv"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/m-lab/bmctool/forwarder"
@@ -59,6 +61,29 @@ func init() {
 
 }
 
+// splitPorts takes a string containing either a "local:remote" ports pair
+// or just "port" and returns local/remote as separate variables. If the string
+// contains a single port, it returns the same port for local and remote.
+func splitPorts(ports string) (forwarder.Port, error) {
+	split := strings.Split(ports, ":")
+
+	srcPort, err := strconv.ParseInt(split[0], 10, 32)
+	if err != nil {
+		return forwarder.Port{}, err
+	}
+
+	if len(split) == 1 {
+		return forwarder.Port{Src: int(srcPort), Dst: int(srcPort)}, nil
+	}
+
+	dstPort, err := strconv.ParseInt(split[1], 10, 32)
+	if err != nil {
+		return forwarder.Port{}, err
+	}
+
+	return forwarder.Port{Src: int(srcPort), Dst: int(dstPort)}, nil
+}
+
 func forward(dstHost string) {
 	if tunnelHost == "" || sshUser == "" {
 		log.Error("BMCTUNNELHOST and BMCTUNNELUSER must not be empty.")
@@ -66,7 +91,13 @@ func forward(dstHost string) {
 	}
 	dstHost = makeBMCHostname(dstHost)
 
-	forwarder := forwarder.NewSSHForwarder(tunnelHost, dstHost, ports)
+	portFwd := []forwarder.Port{}
+	for _, port := range ports {
+		p, err := splitPorts(port)
+		rtx.Must(err, "Cannot parse provided port")
+		portFwd = append(portFwd, p)
+	}
+	forwarder := forwarder.New(tunnelHost, dstHost, portFwd)
 
 	ctx := context.Background()
 	rtx.Must(forwarder.Start(context.Background()), "Cannot start SSH tunnel")
