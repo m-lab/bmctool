@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/apex/log"
+	"github.com/m-lab/bmctool/forwarder"
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/reboot-service/connector"
 	"github.com/m-lab/reboot-service/creds"
@@ -74,19 +75,18 @@ func setKey(host, idx, key string) {
 	}
 
 	if useTunnel {
-		go func() {
-			ports = []string{
-				strconv.Itoa(int(localPort)) + ":" + strconv.Itoa(int(bmcPort)),
-			}
-			forward(bmcHost)
-		}()
+		ports = []string{
+			strconv.Itoa(int(localPort)) + ":" + strconv.Itoa(int(bmcPort)),
+		}
+		sshForwarder := forwarder.NewSSHForwarder(tunnelHost, bmcHost, ports)
+		sshForwarder.Start(context.Background())
 		connectionConfig.Hostname = "127.0.0.1"
 		connectionConfig.Port = 8060
 		// TODO: how to make this more robust? The ssh client is invoked as an
 		// external process, probably the only way of knowing if the connection
 		// has been established is to check the process' output and send a
 		// signal back through a channel.
-		time.Sleep(5000)
+		time.Sleep(3000)
 	}
 
 	conn, err := connector.NewConnector().NewConnection(connectionConfig)

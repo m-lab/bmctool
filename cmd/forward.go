@@ -2,14 +2,12 @@ package cmd
 
 import (
 	"context"
-	"os/exec"
-	"strconv"
-	"strings"
 
 	"github.com/apex/log"
+	"github.com/m-lab/bmctool/forwarder"
+	"github.com/m-lab/go/rtx"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -61,29 +59,6 @@ func init() {
 
 }
 
-// splitPorts takes a string containing either a "local:remote" ports pair
-// or just "port" and returns local/remote as separate variables. If the string
-// contains a single port, it returns the same port for local and remote.
-func splitPorts(ports string) (int32, int32, error) {
-	split := strings.Split(ports, ":")
-
-	srcPort, err := strconv.ParseInt(split[0], 10, 32)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	if len(split) == 1 {
-		return int32(srcPort), int32(srcPort), nil
-	}
-
-	dstPort, err := strconv.ParseInt(split[1], 10, 32)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return int32(srcPort), int32(dstPort), nil
-}
-
 func forward(dstHost string) {
 	if tunnelHost == "" || sshUser == "" {
 		log.Error("BMCTUNNELHOST and BMCTUNNELUSER must not be empty.")
@@ -91,30 +66,10 @@ func forward(dstHost string) {
 	}
 	dstHost = makeBMCHostname(dstHost)
 
-	errs, _ := errgroup.WithContext(context.Background())
+	forwarder := forwarder.NewSSHForwarder(tunnelHost, dstHost, ports)
 
-	for _, port := range ports {
-		srcPort, dstPort, err := splitPorts(port)
-		if err != nil {
-			log.Errorf("Cannot parse provided ports: %v", err)
-			osExit(1)
-		}
+	ctx := context.Background()
+	rtx.Must(forwarder.Start(context.Background()), "Cannot start SSH tunnel")
 
-		log.Infof("Running ssh -N -q " + tunnelHost + " -L" +
-			strconv.FormatInt(int64(srcPort), 10) + ":" + dstHost + ":" +
-			strconv.FormatInt(int64(dstPort), 10))
-
-		cmd := exec.Command("ssh", "-N", "-q", tunnelHost, "-L"+
-			strconv.FormatInt(int64(srcPort), 10)+":"+dstHost+":"+
-			strconv.FormatInt(int64(dstPort), 10))
-
-		errs.Go(func() error {
-			return cmd.Run()
-		})
-	}
-
-	err := errs.Wait()
-	if err != nil {
-		log.Errorf("Error while running ssh command: %v", err)
-	}
+	<-ctx.Done()
 }
