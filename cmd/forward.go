@@ -20,10 +20,12 @@ var (
 	defaultPorts = []string{"4443:443", "5900"}
 )
 
-var forwardCmd = &cobra.Command{
-	Use:   "forward <host>",
-	Short: "Forward ports via an SSH tunnel",
-	Long: `This command creates an SSH tunnel to a given <host>.
+var (
+	newForwarder = forwarder.New
+	forwardCmd   = &cobra.Command{
+		Use:   "forward <host>",
+		Short: "Forward ports via an SSH tunnel",
+		Long: `This command creates an SSH tunnel to a given <host>.
 
 Ports to be forwarded can be specified with the (repeatable) --port flag.
 Local and remote ports can be specified with the following syntax:
@@ -41,12 +43,13 @@ or the BMCTUNNELHOST environment variable.
 
 The username to use to connect to the intermediate host can be specified via
 the --username flag, or the BMCTUNNELUSER environment variable.`,
-	Args: cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		dstHost := args[0]
-		forward(dstHost)
-	},
-}
+		Args: cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			dstHost := args[0]
+			forward(dstHost)
+		},
+	}
+)
 
 func init() {
 	rootCmd.AddCommand(forwardCmd)
@@ -97,7 +100,7 @@ func forward(dstHost string) {
 		rtx.Must(err, "Cannot parse provided port")
 		portFwd = append(portFwd, p)
 	}
-	forwarder := forwarder.New(tunnelHost, dstHost, portFwd)
+	forwarder := newForwarder(tunnelHost, dstHost, portFwd)
 
 	ctx := context.Background()
 	rtx.Must(forwarder.Start(context.Background()), "Cannot start SSH tunnel")

@@ -1,11 +1,23 @@
 package cmd
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
 	"github.com/m-lab/bmctool/forwarder"
+	"github.com/stretchr/testify/assert"
 )
+
+type forwarderMock struct{}
+
+func (fm *forwarderMock) Start(context.Context) error {
+	return nil
+}
+
+func newForwarderMock(string, string, []forwarder.Port) forwarder.Forwarder {
+	return &forwarderMock{}
+}
 
 func Test_splitPorts(t *testing.T) {
 	tests := []struct {
@@ -53,4 +65,31 @@ func Test_splitPorts(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_forward(t *testing.T) {
+	// Replace osExit so that tests don't stop running.
+	osExit = func(code int) {
+		if code != 1 {
+			t.Fatalf("Expected a 1 exit code, got %d.", code)
+		}
+
+		panic("os.Exit called")
+	}
+
+	// bmctool forward should fail if the tunnel host or the SSH user aren't
+	// set.
+	assert.PanicsWithValue(t, "os.Exit called", func() { forward("mlab1.tst01") },
+		"os.Exit was not called")
+
+	oldNewForwarder := newForwarder
+	newForwarder = newForwarderMock
+	tunnelHost = "tunnelhost"
+	sshUser = "user"
+	_, cancel := context.WithCancel(context.Background())
+	// forward() only returns when the context is canceled.
+	go forward("mlab1.tst01")
+	cancel()
+	newForwarder = oldNewForwarder
+
 }
