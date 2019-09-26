@@ -14,10 +14,12 @@ import (
 
 var osExit = os.Exit
 
+// Forwarder allows to forward some ports through a third host.
 type Forwarder interface {
 	Start(context.Context) error
 }
 
+// Port represents a Src:Dst port mapping.
 type Port struct {
 	Src, Dst int
 }
@@ -35,6 +37,8 @@ type sshForwarder struct {
 	dstHost string
 }
 
+// New returns an SSHForwarder with the provided tunnel host, destination host
+// and port mapping pairs.
 func New(tHost string, dstHost string, ports []Port) Forwarder {
 	return &sshForwarder{
 		tHost:   tHost,
