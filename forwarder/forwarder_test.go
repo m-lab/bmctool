@@ -47,7 +47,7 @@ func Test_sshForwarder_getPortParams(t *testing.T) {
 	}
 }
 
-func TestNew(t *testing.T) {
+func Test_New(t *testing.T) {
 	f := New("tunnelhost", "dsthost", []Port{})
 	if f == nil {
 		t.Errorf("New() returned nil.")
