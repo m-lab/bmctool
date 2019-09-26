@@ -25,7 +25,7 @@ type Port struct {
 }
 
 // sshForwarder allows to forward one or more ports via SSH tunneling.
-// It relies on OpenSSH client, thus it needs to be installed on the system.
+// It relies on the OpenSSH client, which must be installed on the system.
 type sshForwarder struct {
 	// Ports to forwards
 	ports []Port
