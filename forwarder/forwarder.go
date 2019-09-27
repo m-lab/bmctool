@@ -58,10 +58,10 @@ func (f *sshForwarder) getPortParams() []string {
 func (f *sshForwarder) Start(ctx context.Context) error {
 	portParams := f.getPortParams()
 
-	args := []string{"ssh", "-N", "-q", f.tHost}
+	args := []string{"-N", "-q", f.tHost}
 	args = append(args, portParams...)
 	log.Infof("Running %v", args)
-	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+	cmd := exec.CommandContext(ctx, "ssh", args[1:]...)
 	err := cmd.Start()
 	if err != nil {
 		return err

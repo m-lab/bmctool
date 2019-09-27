@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 
@@ -77,19 +78,25 @@ func Test_forward(t *testing.T) {
 		panic("os.Exit called")
 	}
 
+	defer func() {
+		osExit = os.Exit
+	}()
+
 	// bmctool forward should fail if the tunnel host or the SSH user aren't
 	// set.
 	assert.PanicsWithValue(t, "os.Exit called", func() { forward("mlab1.tst01") },
 		"os.Exit was not called")
 
 	oldNewForwarder := newForwarder
+	defer func() {
+		newForwarder = oldNewForwarder
+	}()
 	newForwarder = newForwarderMock
 	tunnelHost = "tunnelhost"
 	sshUser = "user"
 	_, cancel := context.WithCancel(context.Background())
+
 	// forward() only returns when the context is canceled.
 	go forward("mlab1.tst01")
 	cancel()
-	newForwarder = oldNewForwarder
-
 }
