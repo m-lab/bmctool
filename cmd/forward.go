@@ -2,14 +2,14 @@ package cmd
 
 import (
 	"context"
-	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/m-lab/bmctool/forwarder"
+	"github.com/m-lab/go/rtx"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -20,10 +20,12 @@ var (
 	defaultPorts = []string{"4443:443", "5900"}
 )
 
-var forwardCmd = &cobra.Command{
-	Use:   "forward <host>",
-	Short: "Forward ports via an SSH tunnel",
-	Long: `This command creates an SSH tunnel to a given <host>.
+var (
+	newForwarder = forwarder.New
+	forwardCmd   = &cobra.Command{
+		Use:   "forward <host>",
+		Short: "Forward ports via an SSH tunnel",
+		Long: `This command creates an SSH tunnel to a given <host>.
 
 Ports to be forwarded can be specified with the (repeatable) --port flag.
 Local and remote ports can be specified with the following syntax:
@@ -41,12 +43,13 @@ or the BMCTUNNELHOST environment variable.
 
 The username to use to connect to the intermediate host can be specified via
 the --username flag, or the BMCTUNNELUSER environment variable.`,
-	Args: cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		dstHost := args[0]
-		forward(dstHost)
-	},
-}
+		Args: cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			dstHost := args[0]
+			forward(dstHost)
+		},
+	}
+)
 
 func init() {
 	rootCmd.AddCommand(forwardCmd)
@@ -64,24 +67,24 @@ func init() {
 // splitPorts takes a string containing either a "local:remote" ports pair
 // or just "port" and returns local/remote as separate variables. If the string
 // contains a single port, it returns the same port for local and remote.
-func splitPorts(ports string) (int32, int32, error) {
+func splitPorts(ports string) (forwarder.Port, error) {
 	split := strings.Split(ports, ":")
 
 	srcPort, err := strconv.ParseInt(split[0], 10, 32)
 	if err != nil {
-		return 0, 0, err
+		return forwarder.Port{}, err
 	}
 
 	if len(split) == 1 {
-		return int32(srcPort), int32(srcPort), nil
+		return forwarder.Port{Src: int(srcPort), Dst: int(srcPort)}, nil
 	}
 
 	dstPort, err := strconv.ParseInt(split[1], 10, 32)
 	if err != nil {
-		return 0, 0, err
+		return forwarder.Port{}, err
 	}
 
-	return int32(srcPort), int32(dstPort), nil
+	return forwarder.Port{Src: int(srcPort), Dst: int(dstPort)}, nil
 }
 
 func forward(dstHost string) {
@@ -91,30 +94,16 @@ func forward(dstHost string) {
 	}
 	dstHost = makeBMCHostname(dstHost)
 
-	errs, _ := errgroup.WithContext(context.Background())
-
+	portFwd := []forwarder.Port{}
 	for _, port := range ports {
-		srcPort, dstPort, err := splitPorts(port)
-		if err != nil {
-			log.Errorf("Cannot parse provided ports: %v", err)
-			osExit(1)
-		}
-
-		log.Infof("Running ssh -N -q " + tunnelHost + " -L" +
-			strconv.FormatInt(int64(srcPort), 10) + ":" + dstHost + ":" +
-			strconv.FormatInt(int64(dstPort), 10))
-
-		cmd := exec.Command("ssh", "-N", "-q", tunnelHost, "-L"+
-			strconv.FormatInt(int64(srcPort), 10)+":"+dstHost+":"+
-			strconv.FormatInt(int64(dstPort), 10))
-
-		errs.Go(func() error {
-			return cmd.Run()
-		})
+		p, err := splitPorts(port)
+		rtx.Must(err, "Cannot parse provided port")
+		portFwd = append(portFwd, p)
 	}
+	forwarder := newForwarder(tunnelHost, dstHost, portFwd)
 
-	err := errs.Wait()
-	if err != nil {
-		log.Errorf("Error while running ssh command: %v", err)
-	}
+	ctx := context.Background()
+	rtx.Must(forwarder.Start(context.Background()), "Cannot start SSH tunnel")
+
+	<-ctx.Done()
 }
