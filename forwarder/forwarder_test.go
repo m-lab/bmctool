@@ -10,6 +10,7 @@ func Test_sshForwarder_getPortParams(t *testing.T) {
 		name    string
 		ports   []Port
 		tHost   string
+		tUser   string
 		dstHost string
 		want    []string
 	}{
@@ -26,6 +27,7 @@ func Test_sshForwarder_getPortParams(t *testing.T) {
 				},
 			},
 			tHost:   "tunnelhost",
+			tUser:   "user",
 			dstHost: "dsthost",
 			want: []string{
 				"-L4443:dsthost:443",
@@ -38,6 +40,7 @@ func Test_sshForwarder_getPortParams(t *testing.T) {
 			f := &sshForwarder{
 				ports:   tt.ports,
 				tHost:   tt.tHost,
+				tUser:   tt.tUser,
 				dstHost: tt.dstHost,
 			}
 			if got := f.getPortParams(); !reflect.DeepEqual(got, tt.want) {
@@ -48,7 +51,7 @@ func Test_sshForwarder_getPortParams(t *testing.T) {
 }
 
 func Test_New(t *testing.T) {
-	f := New("tunnelhost", "dsthost", []Port{})
+	f := New("tunnelhost", "user", "dsthost", []Port{})
 	if f == nil {
 		t.Errorf("New() returned nil.")
 	}

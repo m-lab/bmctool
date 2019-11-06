@@ -33,15 +33,19 @@ type sshForwarder struct {
 	// Tunnel host
 	tHost string
 
+	// Tunnel username
+	tUser string
+
 	// Destination host
 	dstHost string
 }
 
 // New returns an SSHForwarder with the provided tunnel host, destination host
 // and port mapping pairs.
-func New(tHost string, dstHost string, ports []Port) Forwarder {
+func New(tHost string, tUser string, dstHost string, ports []Port) Forwarder {
 	return &sshForwarder{
 		tHost:   tHost,
+		tUser:   tUser,
 		dstHost: dstHost,
 		ports:   ports,
 	}
@@ -58,7 +62,7 @@ func (f *sshForwarder) getPortParams() []string {
 func (f *sshForwarder) Start(ctx context.Context) error {
 	portParams := f.getPortParams()
 
-	args := []string{"-N", "-q", f.tHost}
+	args := []string{"-N", "-q", f.tUser + "@" + f.tHost}
 	args = append(args, portParams...)
 	log.Infof("Running %v", args)
 	cmd := exec.CommandContext(ctx, "ssh", args[1:]...)

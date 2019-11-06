@@ -74,13 +74,17 @@ func setKey(host, idx, key string) {
 	}
 
 	if useTunnel {
+		if tunnelHost == "" || sshUser == "" {
+			log.Error("BMCTUNNELHOST and BMCTUNNELUSER must not be empty.")
+			osExit(1)
+		}
 		ports := []forwarder.Port{
 			{
 				Src: int(localPort),
 				Dst: int(bmcPort),
 			},
 		}
-		sshForwarder := forwarder.New(tunnelHost, bmcHost, ports)
+		sshForwarder := forwarder.New(tunnelHost, sshUser, bmcHost, ports)
 		sshForwarder.Start(context.Background())
 		connectionConfig.Hostname = "127.0.0.1"
 		connectionConfig.Port = 8060
