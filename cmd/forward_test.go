@@ -16,7 +16,7 @@ func (fm *forwarderMock) Start(context.Context) error {
 	return nil
 }
 
-func newForwarderMock(string, string, []forwarder.Port) forwarder.Forwarder {
+func newForwarderMock(string, string, string, []forwarder.Port) forwarder.Forwarder {
 	return &forwarderMock{}
 }
 
@@ -84,6 +84,8 @@ func Test_forward(t *testing.T) {
 
 	// bmctool forward should fail if the tunnel host or the SSH user aren't
 	// set.
+	sshUser = ""
+	tunnelHost = ""
 	assert.PanicsWithValue(t, "os.Exit called", func() { forward("mlab1.tst01") },
 		"os.Exit was not called")
 

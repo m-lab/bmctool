@@ -100,7 +100,7 @@ func forward(dstHost string) {
 		rtx.Must(err, "Cannot parse provided port")
 		portFwd = append(portFwd, p)
 	}
-	forwarder := newForwarder(tunnelHost, dstHost, portFwd)
+	forwarder := newForwarder(tunnelHost, sshUser, dstHost, portFwd)
 
 	ctx := context.Background()
 	rtx.Must(forwarder.Start(context.Background()), "Cannot start SSH tunnel")
