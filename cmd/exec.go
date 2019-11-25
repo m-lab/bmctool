@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/apex/log"
 	"github.com/m-lab/bmctool/forwarder"
@@ -13,37 +11,29 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	adminIdx = 2 // Index for the 'admin' user on DRACs
-)
-
-var (
-	bmcPort   int32
-	localPort int32
-	useTunnel bool
-	// keysSetCmd represents the keys set command
-	keysSetCmd = &cobra.Command{
-		Use:   "set <host> <index> <key>",
-		Short: "Replaces the SSH key at <index> with <key>",
-		Args:  cobra.MinimumNArgs(3),
-		Run: func(cmd *cobra.Command, args []string) {
-			setKey(args[0], args[1], args[2])
-		},
-	}
-)
-
-func init() {
-	keysCmd.AddCommand(keysSetCmd)
-
-	keysSetCmd.Flags().Int32Var(&bmcPort, "bmcport", defaultBMCPort,
-		"BMC port to use")
-	keysSetCmd.Flags().BoolVar(&useTunnel, "tunnel", false,
-		"Tunnel through an intermediate host")
-	keysSetCmd.Flags().Int32Var(&localPort, "localport", defaultLocalPort,
-		"Local port to use when tunneling with -tunnel")
+// execCmd represents the exec command
+var execCmd = &cobra.Command{
+	Use:   "exec <host> <command>",
+	Short: "Execute a single command on a BMC",
+	Args:  cobra.MinimumNArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		host := args[0]
+		toExec := args[1]
+		exec(host, toExec)
+	},
 }
 
-func setKey(host, idx, key string) {
+func init() {
+	rootCmd.AddCommand(execCmd)
+	execCmd.Flags().Int32Var(&bmcPort, "bmcport", defaultBMCPort,
+		"BMC port to use")
+	execCmd.Flags().Int32Var(&localPort, "localport", defaultLocalPort,
+		"Local port to use when tunneling with -tunnel")
+	execCmd.Flags().BoolVar(&useTunnel, "tunnel", false,
+		"Tunnel through an intermediate host")
+}
+
+func exec(host, cmd string) {
 	bmcHost := makeBMCHostname(host)
 	if projectID == "" {
 		projectID = getProjectID(bmcHost)
@@ -51,7 +41,6 @@ func setKey(host, idx, key string) {
 
 	log.Infof("Project: %s", projectID)
 	log.Infof("Fetching credentials for %s", bmcHost)
-
 	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
 	rtx.Must(err, "Cannot connect to Datastore")
 	defer provider.Close()
@@ -59,7 +48,7 @@ func setKey(host, idx, key string) {
 	creds, err := provider.FindCredentials(context.Background(), bmcHost)
 	rtx.Must(err, "Cannot fetch credentials")
 
-	// Make a connection to the host
+	// Make a connection to the BMC.
 	connectionConfig := &connector.ConnectionConfig{
 		Hostname: bmcHost,
 		Username: creds.Username,
@@ -86,23 +75,15 @@ func setKey(host, idx, key string) {
 		connectionConfig.Port = localPort
 	}
 
+	// Establish connection to the BMC.
 	conn, err := connector.NewConnector().NewConnection(connectionConfig)
 	rtx.Must(err, "Cannot connect to BMC: %s", bmcHost)
 	defer conn.Close()
 
-	// Sending the racadm command via SSH in single-command mode means the
-	// SSH key will be truncated. Apparently, the only way to make this work
-	// is to request a shell and run the command interactively, then check
-	// stdout/stderr for signs that the command execution succeeded.
-	cmd := fmt.Sprintf("racadm sshpkauth -i %d -k %s -t \"%s\"", adminIdx, idx, key)
+	// Execute the command.
 	log.Infof("Running command: %s", cmd)
 	out, err := conn.ExecDRACShell(cmd)
-	rtx.Must(err, "Cannot set SSH key on %s (index: %s): %s", bmcHost, idx, out)
+	rtx.Must(err, "Cannot execute command \"%s\"", cmd)
 
-	if !strings.Contains(out, "PK SSH Authentication operation completed successfully.") {
-		log.Errorf("Operation failed: %s", out)
-		osExit(1)
-	}
-
-	log.Info("The SSH key has been added successfully")
+	log.Info(out)
 }

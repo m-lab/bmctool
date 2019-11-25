@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"time"
 
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/reboot-service/creds"
@@ -15,6 +16,9 @@ const (
 	prodProjectID    = "mlab-oti"
 	stagingProjectID = "mlab-staging"
 	sandboxProjectID = "mlab-sandbox"
+	defaultBMCPort   = 806
+	defaultLocalPort = 8060
+	bmcTimeout       = 30 * time.Second
 )
 
 var (
