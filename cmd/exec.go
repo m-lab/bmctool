@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var newConnector = connector.NewConnector
+
 // execCmd represents the exec command
 var execCmd = &cobra.Command{
 	Use:   "exec <host> <command>",
@@ -69,14 +71,15 @@ func exec(host, cmd string) {
 				Dst: int(bmcPort),
 			},
 		}
-		sshForwarder := forwarder.New(tunnelHost, sshUser, bmcHost, ports)
+		sshForwarder := newForwarder(tunnelHost, sshUser, bmcHost, ports)
 		sshForwarder.Start(context.Background())
 		connectionConfig.Hostname = "127.0.0.1"
 		connectionConfig.Port = localPort
 	}
 
 	// Establish connection to the BMC.
-	conn, err := connector.NewConnector().NewConnection(connectionConfig)
+	c := newConnector()
+	conn, err := c.NewConnection(connectionConfig)
 	rtx.Must(err, "Cannot connect to BMC: %s", bmcHost)
 	defer conn.Close()
 

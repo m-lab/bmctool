@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/m-lab/bmctool/forwarder"
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/reboot-service/creds"
 	"github.com/spf13/cobra"
@@ -30,6 +31,7 @@ var (
 	// These allow for testing.
 	credsNewProvider = creds.NewProvider
 	osExit           = os.Exit
+	newForwarder     = forwarder.New
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
 		Use: "bmctool",
