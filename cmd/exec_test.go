@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/m-lab/reboot-service/connector"
@@ -40,13 +41,27 @@ func Test_exec(t *testing.T) {
 		Model:    "DRAC",
 	}
 
-	oldCredsNewProvider := credsNewProvider
-	oldNewConnector := newConnector
-	oldNewForwarder := newForwarder
+	// Replace osExit so that tests don't stop running.
+	osExit = func(code int) {
+		if code != 1 {
+			t.Fatalf("Expected a 1 exit code, got %d.", code)
+		}
+
+		panic("os.Exit called")
+	}
+
+	defer func() {
+		osExit = os.Exit
+	}()
 
 	// Set up a FakeProvider with fake credentials.
 	prov := credstest.NewProvider()
 	prov.AddCredentials(context.Background(), "mlab1d.tst01.measurement-lab.org", fakeCreds)
+
+	oldCredsNewProvider := credsNewProvider
+	oldNewConnector := newConnector
+	oldNewForwarder := newForwarder
+
 	credsNewProvider = func(creds.Connector, string, string) (creds.Provider, error) {
 		return prov, nil
 	}
@@ -59,7 +74,7 @@ func Test_exec(t *testing.T) {
 
 	useTunnel = true
 	tunnelHost = "test"
-	bmcUser = "test"
+	sshUser = "test"
 	exec("mlab1d.tst01", "help")
 
 	newForwarder = oldNewForwarder
