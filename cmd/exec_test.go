@@ -58,6 +58,8 @@ func Test_exec(t *testing.T) {
 	newForwarder = newForwarderMock
 
 	useTunnel = true
+	tunnelHost = "test"
+	bmcUser = "test"
 	exec("mlab1d.tst01", "help")
 
 	newForwarder = oldNewForwarder
