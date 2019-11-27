@@ -21,8 +21,7 @@ var (
 )
 
 var (
-	newForwarder = forwarder.New
-	forwardCmd   = &cobra.Command{
+	forwardCmd = &cobra.Command{
 		Use:   "forward <host>",
 		Short: "Forward ports via an SSH tunnel",
 		Long: `This command creates an SSH tunnel to a given <host>.

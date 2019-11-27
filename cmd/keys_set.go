@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/apex/log"
 	"github.com/m-lab/bmctool/forwarder"
@@ -15,10 +14,7 @@ import (
 )
 
 const (
-	defaultBMCPort   = 806
-	defaultLocalPort = 8060
-	bmcTimeout       = 30 * time.Second
-	adminIdx         = 2 // Index for the 'admin' user on DRACs
+	adminIdx = 2 // Index for the 'admin' user on DRACs
 )
 
 var (
@@ -87,7 +83,7 @@ func setKey(host, idx, key string) {
 		sshForwarder := forwarder.New(tunnelHost, sshUser, bmcHost, ports)
 		sshForwarder.Start(context.Background())
 		connectionConfig.Hostname = "127.0.0.1"
-		connectionConfig.Port = 8060
+		connectionConfig.Port = localPort
 	}
 
 	conn, err := connector.NewConnector().NewConnection(connectionConfig)
