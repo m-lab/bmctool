@@ -12,12 +12,17 @@ import (
 )
 
 // Mock objects for Connector/Connection.
-type mockConnector struct{}
+type mockConnector struct {
+	conn *mockConnection
+}
 
-type mockConnection struct{}
+type mockConnection struct {
+	execCalls int
+}
 
 func (connection *mockConnection) ExecDRACShell(string) (string, error) {
-	return "Not implemented.", nil
+	connection.execCalls++
+	return "ExecDRACShell called.", nil
 }
 
 func (connection *mockConnection) Reboot() (string, error) {
@@ -28,7 +33,8 @@ func (connection *mockConnection) Close() error {
 }
 
 func (connector *mockConnector) NewConnection(config *connector.ConnectionConfig) (connector.Connection, error) {
-	return &mockConnection{}, nil
+	connector.conn = &mockConnection{}
+	return connector.conn, nil
 }
 
 func Test_exec(t *testing.T) {
@@ -66,8 +72,9 @@ func Test_exec(t *testing.T) {
 		return prov, nil
 	}
 
+	c := &mockConnector{}
 	newConnector = func() connector.Connector {
-		return &mockConnector{}
+		return c
 	}
 
 	newForwarder = newForwarderMock
@@ -76,6 +83,10 @@ func Test_exec(t *testing.T) {
 	tunnelHost = "test"
 	sshUser = "test"
 	exec("mlab1d.tst01", "help")
+
+	if c.conn.execCalls != 1 {
+		t.Errorf("exec called but execCalls != 1")
+	}
 
 	newForwarder = oldNewForwarder
 	credsNewProvider = oldCredsNewProvider
