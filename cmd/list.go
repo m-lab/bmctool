@@ -14,7 +14,7 @@ var listCmd = &cobra.Command{
 	Short: "List all the available BMCs.",
 	Long: `This command lists all the BMCs stored on Google Cloud Datastore.
 
-The GCP project to use can be specified by providing the --project flag`,
+The GCP project to use must be specified by providing the --project flag`,
 	Run: func(cmd *cobra.Command, args []string) {
 		listBMCs()
 	},
@@ -27,6 +27,8 @@ func init() {
 func listBMCs() {
 	// If no project ID has been specified, don't do anything.
 	if projectID == "" {
+		fmt.Println("The GCP project to use must be specified by " +
+			"providing the --project flag")
 		osExit(1)
 	}
 
