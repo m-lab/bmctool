@@ -25,6 +25,8 @@ const (
 var (
 	projectID string
 
+	// TODO(kinkade): these patterns should go away in favor of determining the
+	// project from siteinfo.
 	sandboxRegex = regexp.MustCompile("[a-zA-Z]{3}[0-9]t")
 	stagingRegex = regexp.MustCompile("^mlab4")
 
@@ -60,7 +62,7 @@ func init() {
 
 // parseNodeSite extracts node and site from a full hostname.
 func parseNodeSite(hostname string) (string, string, error) {
-	regex := regexp.MustCompile("(mlab[1-4]d?)\\.([a-zA-Z]{3}[0-9t]{2}).*")
+	regex := regexp.MustCompile(`(mlab[1-4]d?)[.-]([a-zA-Z]{3}[0-9ct]{2}).*`)
 	result := regex.FindStringSubmatch(hostname)
 	if len(result) != 3 {
 		return "", "",
@@ -73,9 +75,13 @@ func parseNodeSite(hostname string) (string, string, error) {
 // makeBMCHostname returns a full BMC hostname. There are different ways the
 // hostname can be provided:
 // - mlab1.lga0t
+// - mlab1-lga0t
 // - mlab1d.lga0t
+// - mlab1d-lga0t
 // - mlab1.lga0t.measurement-lab.org
+// - mlab1-lga0t.measurement-lab.org
 // - mlab1d.lga0t.measurement-lab.org
+// - mlab1d-lga0t.measurement-lab.org
 // This function returns the full hostname in any of these cases
 func makeBMCHostname(name string) string {
 	node, site, err := parseNodeSite(name)
@@ -85,7 +91,7 @@ func makeBMCHostname(name string) string {
 	if node[len(node)-1:] != "d" {
 		node = node + "d"
 	}
-	return fmt.Sprintf("%s.%s.measurement-lab.org", node, site)
+	return fmt.Sprintf("%s-%s.%s.measurement-lab.org", node, site, prodProjectID)
 }
 
 // getProjectID returns the correct GCP project to use based on the hostname.
