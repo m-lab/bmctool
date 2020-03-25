@@ -54,7 +54,7 @@ func reboot(host string) {
 		osExit(1)
 	}
 	// Make sure the provided host is a valid M-Lab BMC.
-	host = makeBMCHostname(host)
+	host = makeBMCHostname(host, nameVersion)
 	fullURL := rebootAPIURL + rebootEndpoint + "?host=" + host
 
 	log.Infof("POST %s", fullURL)

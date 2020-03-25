@@ -91,7 +91,7 @@ func forward(dstHost string) {
 		log.Error("BMCTUNNELHOST and BMCTUNNELUSER must not be empty.")
 		osExit(1)
 	}
-	dstHost = makeBMCHostname(dstHost)
+	dstHost = makeBMCHostname(dstHost, nameVersion)
 
 	portFwd := []forwarder.Port{}
 	for _, port := range ports {

@@ -36,7 +36,7 @@ func init() {
 }
 
 func exec(host, cmd string) {
-	bmcHost := makeBMCHostname(host)
+	bmcHost := makeBMCHostname(host, nameVersion)
 	if projectID == "" {
 		projectID = getProjectID(bmcHost)
 	}

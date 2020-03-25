@@ -33,7 +33,7 @@ func init() {
 // printCredentials retrieves credentials for a given hostname and prints them
 // in JSON format.
 func printCredentials(host string) {
-	bmcHost := makeBMCHostname(host)
+	bmcHost := makeBMCHostname(host, nameVersion)
 	if projectID == "" {
 		projectID = getProjectID(bmcHost)
 	}

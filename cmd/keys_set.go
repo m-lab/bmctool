@@ -44,7 +44,7 @@ func init() {
 }
 
 func setKey(host, idx, key string) {
-	bmcHost := makeBMCHostname(host)
+	bmcHost := makeBMCHostname(host, nameVersion)
 	if projectID == "" {
 		projectID = getProjectID(bmcHost)
 	}
