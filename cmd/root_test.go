@@ -11,23 +11,43 @@ func Test_makeBMCHostname(t *testing.T) {
 	}{
 		{
 			name: "mlab1d.lga0t",
-			want: "mlab1d.lga0t.measurement-lab.org",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
 		},
 		{
 			name: "mlab1.lga0t",
-			want: "mlab1d.lga0t.measurement-lab.org",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
 		},
 		{
 			name: "mlab1.lga0t.measurement-lab.org",
-			want: "mlab1d.lga0t.measurement-lab.org",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
 		},
 		{
 			name: "mlab1d.lga0t.measurement-lab.org",
-			want: "mlab1d.lga0t.measurement-lab.org",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
 		},
 		{
 			name: "mlab1d.lga0t.blah",
-			want: "mlab1d.lga0t.measurement-lab.org",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
+		},
+		{
+			name: "mlab1-lga0t",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
+		},
+		{
+			name: "mlab1d-lga0t",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
+		},
+		{
+			name: "mlab1-lga0t.lol.example.org",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
+		},
+		{
+			name: "mlab1-lga0t.mlab-oti.measurement-lab.org",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
+		},
+		{
+			name: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
+			want: "mlab1d-lga0t.mlab-oti.measurement-lab.org",
 		},
 	}
 	for _, tt := range tests {
