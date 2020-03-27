@@ -55,7 +55,7 @@ func Execute() {
 }
 
 func init() {
-	// The --project and --hostname-version flags are used by several commands, thus they are defined
+	// The --project and --name-version flags are used by several commands, thus they are defined
 	// as global ("Persistent") flags here.
 	rootCmd.PersistentFlags().StringVar(&projectID, "project", "",
 		"Project ID to use")
