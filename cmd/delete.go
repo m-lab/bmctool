@@ -30,9 +30,6 @@ func init() {
 // deleteCredentials updates a Credentials entity on Google Cloud Datastore.
 func deleteCredentials() {
 	bmcHost = makeBMCHostname(bmcHost, nameVersion)
-	if projectID == "" {
-		projectID = getProjectID(bmcHost)
-	}
 
 	log.Infof("Deleting credentials for host %v", bmcHost)
 	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)

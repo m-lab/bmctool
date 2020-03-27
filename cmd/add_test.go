@@ -38,7 +38,7 @@ func Test_addCredentials(t *testing.T) {
 	}
 
 	// addCredentials should successfully add a new node.
-	// The hostname is intentionally provided with the short name here.
+	// The v1 hostname is intentionally provided with the short name here.
 	bmcHost = "mlab1.lga0t"
 	bmcAddr = "127.0.0.1"
 	bmcUser = "user"

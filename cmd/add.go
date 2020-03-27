@@ -53,9 +53,6 @@ func addCredentials() {
 	}
 
 	bmcHost = makeBMCHostname(bmcHost, nameVersion)
-	if projectID == "" {
-		projectID = getProjectID(bmcHost)
-	}
 
 	c := &creds.Credentials{
 		Address:  bmcAddr,
