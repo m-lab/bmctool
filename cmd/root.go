@@ -23,8 +23,11 @@ const (
 )
 
 var (
-	projectID string
+	projectID   string
+	nameVersion string
 
+	// TODO(kinkade): these patterns should go away in favor of determining the
+	// project from siteinfo.
 	sandboxRegex = regexp.MustCompile("[a-zA-Z]{3}[0-9]t")
 	stagingRegex = regexp.MustCompile("^mlab4")
 
@@ -52,15 +55,17 @@ func Execute() {
 }
 
 func init() {
-	// The --project flag is used by several commands, thus it's defined
-	// as global ("Persistent") flag here.
+	// The --project and --name-version flags are used by several commands, thus they are defined
+	// as global ("Persistent") flags here.
 	rootCmd.PersistentFlags().StringVar(&projectID, "project", "",
 		"Project ID to use")
+	rootCmd.PersistentFlags().StringVar(&nameVersion, "name-version", "v1",
+		"Hostname version to use")
 }
 
 // parseNodeSite extracts node and site from a full hostname.
 func parseNodeSite(hostname string) (string, string, error) {
-	regex := regexp.MustCompile("(mlab[1-4]d?)\\.([a-zA-Z]{3}[0-9t]{2}).*")
+	regex := regexp.MustCompile(`(mlab[1-4]d?)[.-]([a-zA-Z]{3}[0-9ct]{2}).*`)
 	result := regex.FindStringSubmatch(hostname)
 	if len(result) != 3 {
 		return "", "",
@@ -73,17 +78,29 @@ func parseNodeSite(hostname string) (string, string, error) {
 // makeBMCHostname returns a full BMC hostname. There are different ways the
 // hostname can be provided:
 // - mlab1.lga0t
+// - mlab1-lga0t
 // - mlab1d.lga0t
+// - mlab1d-lga0t
 // - mlab1.lga0t.measurement-lab.org
+// - mlab1-lga0t.measurement-lab.org
 // - mlab1d.lga0t.measurement-lab.org
+// - mlab1d-lga0t.measurement-lab.org
 // This function returns the full hostname in any of these cases
-func makeBMCHostname(name string) string {
+func makeBMCHostname(name string, version string) string {
 	node, site, err := parseNodeSite(name)
 	rtx.Must(err, "Cannot extract BMC hostname")
+
+	if projectID == "" {
+		projectID = getProjectID(bmcHost)
+	}
 
 	// All the BMC hostnames must end with "d".
 	if node[len(node)-1:] != "d" {
 		node = node + "d"
+	}
+
+	if version == "v2" {
+		return fmt.Sprintf("%s-%s.%s.measurement-lab.org", node, site, projectID)
 	}
 	return fmt.Sprintf("%s.%s.measurement-lab.org", node, site)
 }

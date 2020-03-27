@@ -33,10 +33,7 @@ func init() {
 // printCredentials retrieves credentials for a given hostname and prints them
 // in JSON format.
 func printCredentials(host string) {
-	bmcHost := makeBMCHostname(host)
-	if projectID == "" {
-		projectID = getProjectID(bmcHost)
-	}
+	bmcHost := makeBMCHostname(host, nameVersion)
 
 	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
 	rtx.Must(err, "Cannot connect to Datastore")

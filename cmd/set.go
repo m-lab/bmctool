@@ -42,10 +42,7 @@ func init() {
 
 // setCredentials updates a Credentials entity on Google Cloud Datastore.
 func setCredentials() {
-	bmcHost = makeBMCHostname(bmcHost)
-	if projectID == "" {
-		projectID = getProjectID(bmcHost)
-	}
+	bmcHost = makeBMCHostname(bmcHost, nameVersion)
 
 	log.Infof("Updating credentials for host %v", bmcHost)
 	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
