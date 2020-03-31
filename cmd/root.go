@@ -91,7 +91,7 @@ func makeBMCHostname(name string, version string) string {
 	rtx.Must(err, "Cannot extract BMC hostname")
 
 	if projectID == "" {
-		projectID = getProjectID(bmcHost)
+		projectID = getProjectID(name)
 	}
 
 	// All the BMC hostnames must end with "d".
