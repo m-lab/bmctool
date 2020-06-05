@@ -13,7 +13,6 @@ func Test_makeBMCHostname(t *testing.T) {
 		name        string
 		nameVersion string
 		want        string
-		wantErr     bool
 	}{
 		{
 			name:        "mlab1d.lga0t",
