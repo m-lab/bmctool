@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/m-lab/bmctool/forwarder"
+	"github.com/m-lab/go/host"
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/reboot-service/creds"
 	"github.com/spf13/cobra"
@@ -106,11 +107,18 @@ func makeBMCHostname(name string, version string) string {
 }
 
 // getProjectID returns the correct GCP project to use based on the hostname.
-func getProjectID(host string) string {
-	if sandboxRegex.MatchString(host) {
+func getProjectID(hostname string) string {
+	// First, try parsing the hostname with host.Parse().
+	parsed, err := host.Parse(hostname)
+	if err == nil && parsed.Project != "" {
+		return parsed.Project
+	}
+	// If host.Parse() fails, try with regular expressions.
+	// TODO: replace this with siteinfo's projects.json.
+	if sandboxRegex.MatchString(hostname) {
 		return sandboxProjectID
 	}
-	if stagingRegex.MatchString(host) {
+	if stagingRegex.MatchString(hostname) {
 		return stagingProjectID
 	}
 
