@@ -60,7 +60,7 @@ func init() {
 	// as global ("Persistent") flags here.
 	rootCmd.PersistentFlags().StringVar(&projectID, "project", "",
 		"Project ID to use")
-	rootCmd.PersistentFlags().StringVar(&nameVersion, "name-version", "v1",
+	rootCmd.PersistentFlags().StringVar(&nameVersion, "name-version", "v2",
 		"Hostname version to use")
 }
 
