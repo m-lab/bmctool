@@ -57,7 +57,7 @@ func Execute() {
 
 func init() {
 	// The --project flags is used by several commands, thus it's defined
-	// as global ("Persistent") flags here.
+	// as a global ("Persistent") flags here.
 	rootCmd.PersistentFlags().StringVar(&projectID, "project", "",
 		"Project ID to use")
 }
