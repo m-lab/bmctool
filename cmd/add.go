@@ -52,7 +52,7 @@ func addCredentials() {
 		osExit(1)
 	}
 
-	bmcHost = makeBMCHostname(bmcHost, nameVersion)
+	bmcHost = makeBMCHostname(bmcHost)
 
 	c := &creds.Credentials{
 		Address:  bmcAddr,

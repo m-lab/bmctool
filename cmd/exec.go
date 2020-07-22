@@ -36,7 +36,7 @@ func init() {
 }
 
 func exec(host, cmd string) {
-	bmcHost := makeBMCHostname(host, nameVersion)
+	bmcHost := makeBMCHostname(host)
 
 	log.Infof("Project: %s", projectID)
 	log.Infof("Fetching credentials for %s", bmcHost)

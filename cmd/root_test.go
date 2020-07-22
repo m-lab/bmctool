@@ -4,10 +4,6 @@ import (
 	"testing"
 )
 
-func init() {
-	nameVersion = "v1"
-}
-
 func Test_makeBMCHostname(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -15,71 +11,39 @@ func Test_makeBMCHostname(t *testing.T) {
 		want        string
 	}{
 		{
-			name:        "mlab1d.lga0t",
-			nameVersion: "v1",
-			want:        "mlab1d.lga0t.measurement-lab.org",
+			name: "mlab1-lga0t",
+			want: "mlab1d-lga0t.mlab-sandbox.measurement-lab.org",
 		},
 		{
-			name:        "mlab1.lga0t",
-			nameVersion: "v1",
-			want:        "mlab1d.lga0t.measurement-lab.org",
+			name: "mlab1d-lga0t",
+			want: "mlab1d-lga0t.mlab-sandbox.measurement-lab.org",
 		},
 		{
-			name:        "mlab1.lga0t.measurement-lab.org",
-			nameVersion: "v1",
-			want:        "mlab1d.lga0t.measurement-lab.org",
+			name: "mlab4-abc01",
+			want: "mlab4d-abc01.mlab-staging.measurement-lab.org",
 		},
 		{
-			name:        "mlab1d.lga0t.measurement-lab.org",
-			nameVersion: "v1",
-			want:        "mlab1d.lga0t.measurement-lab.org",
+			name: "mlab1-lga0t.lol.example.org",
+			want: "mlab1d-lga0t.mlab-sandbox.measurement-lab.org",
 		},
 		{
-			name:        "mlab1d.lga0t.blah",
-			nameVersion: "v1",
-			want:        "mlab1d.lga0t.measurement-lab.org",
+			name: "mlab4-abc01.lol.example.org",
+			want: "mlab4d-abc01.mlab-staging.measurement-lab.org",
 		},
 		{
-			name:        "mlab1-lga0t",
-			nameVersion: "v2",
-			want:        "mlab1d-lga0t.mlab-sandbox.measurement-lab.org",
+			name: "mlab1-lga0t.test-project.measurement-lab.org",
+			want: "mlab1d-lga0t.test-project.measurement-lab.org",
 		},
 		{
-			name:        "mlab1d-lga0t",
-			nameVersion: "v2",
-			want:        "mlab1d-lga0t.mlab-sandbox.measurement-lab.org",
-		},
-		{
-			name:        "mlab4-abc01",
-			nameVersion: "v2",
-			want:        "mlab4d-abc01.mlab-staging.measurement-lab.org",
-		},
-		{
-			name:        "mlab1-lga0t.lol.example.org",
-			nameVersion: "v2",
-			want:        "mlab1d-lga0t.mlab-sandbox.measurement-lab.org",
-		},
-		{
-			name:        "mlab4-abc01.lol.example.org",
-			nameVersion: "v2",
-			want:        "mlab4d-abc01.mlab-staging.measurement-lab.org",
-		},
-		{
-			name:        "mlab1-lga0t.test-project.measurement-lab.org",
-			nameVersion: "v2",
-			want:        "mlab1d-lga0t.test-project.measurement-lab.org",
-		},
-		{
-			name:        "mlab1d-lga0t.test-project.measurement-lab.org",
-			nameVersion: "v2",
-			want:        "mlab1d-lga0t.test-project.measurement-lab.org",
+			name: "mlab1d-lga0t.test-project.measurement-lab.org",
+			want: "mlab1d-lga0t.test-project.measurement-lab.org",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			projectID = ""
-			if got := makeBMCHostname(tt.name, tt.nameVersion); got != tt.want {
+			if got := makeBMCHostname(tt.name); got != tt.want {
 				t.Errorf("makeBMCHostname() = %v, want %v", got, tt.want)
 			}
 		})

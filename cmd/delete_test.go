@@ -33,13 +33,13 @@ func Test_deleteCredentials(t *testing.T) {
 
 	// Set up a FakeProvider with fake credentials.
 	prov := credstest.NewProvider()
-	prov.AddCredentials(context.Background(), "mlab4d.lga0t.measurement-lab.org", fakeCreds)
+	prov.AddCredentials(context.Background(), "mlab4d-lga0t.mlab-sandbox.measurement-lab.org", fakeCreds)
 	credsNewProvider = func(creds.Connector, string, string) (creds.Provider, error) {
 		return prov, nil
 	}
 
 	// deleteCredentials should successfully remove an existing entity.
-	bmcHost = "mlab4d.lga0t"
+	bmcHost = "mlab4d-lga0t"
 	deleteCredentials()
 
 	_, err := prov.FindCredentials(context.Background(), "mlab4.lga0t")

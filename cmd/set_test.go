@@ -13,7 +13,7 @@ func Test_setCredentials(t *testing.T) {
 	// Create fake Credentials.
 	fakeCreds := &creds.Credentials{
 		Address:  "127.0.0.1",
-		Hostname: "mlab4d.lga0t.measurement-lab.org",
+		Hostname: "mlab4d-lga0t.mlab-sandbox.measurement-lab.org",
 		Username: "username",
 		Password: "password",
 		Model:    "DRAC",
@@ -33,31 +33,32 @@ func Test_setCredentials(t *testing.T) {
 
 	// Set up a FakeProvider with fake credentials.
 	prov := credstest.NewProvider()
-	prov.AddCredentials(context.Background(), "mlab4d.lga0t.measurement-lab.org", fakeCreds)
+	prov.AddCredentials(context.Background(), "mlab4d-lga0t.mlab-sandbox.measurement-lab.org", fakeCreds)
 	credsNewProvider = func(creds.Connector, string, string) (creds.Provider, error) {
 		return prov, nil
 	}
 
 	// setCredentials should successfully change an existing entity
-	bmcHost = "mlab4d.lga0t"
+	bmcHost = "mlab4d-lga0t"
 	bmcUser = "testuser"
 	bmcPass = "testpass"
 	bmcAddr = "127.0.0.2"
 	setCredentials()
 
 	// Check the node that's been just added.
-	c, err := prov.FindCredentials(context.Background(), "mlab4d.lga0t.measurement-lab.org")
+	c, err := prov.FindCredentials(context.Background(),
+		"mlab4d-lga0t.mlab-sandbox.measurement-lab.org")
 	if err != nil {
 		t.Errorf("FindCredentials() returned error: %v", err)
 	}
-	if c.Hostname != "mlab4d.lga0t.measurement-lab.org" ||
+	if c.Hostname != "mlab4d-lga0t.mlab-sandbox.measurement-lab.org" ||
 		c.Username != "testuser" || c.Password != "testpass" ||
 		c.Address != "127.0.0.2" || c.Model != "DRAC" {
 		t.Errorf("setCredentials() didn't update the expected entity: %v", c)
 	}
 
 	// bmctool set should fail if called on a non-existing host.
-	bmcHost = "mlab4.abc01"
+	bmcHost = "mlab1-abc01"
 	assert.PanicsWithValue(t, "os.Exit called", setCredentials,
 		"os.Exit was not called")
 
