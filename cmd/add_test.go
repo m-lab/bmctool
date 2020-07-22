@@ -32,25 +32,25 @@ func Test_addCredentials(t *testing.T) {
 
 	// Set up a FakeProvider with fake credentials.
 	prov := credstest.NewProvider()
-	prov.AddCredentials(context.Background(), "mlab4d.lga0t.measurement-lab.org", fakeCreds)
+	prov.AddCredentials(context.Background(),
+		"mlab4d-lga0t.mlab-sandbox.measurement-lab.org", fakeCreds)
 	credsNewProvider = func(creds.Connector, string, string) (creds.Provider, error) {
 		return prov, nil
 	}
 
 	// addCredentials should successfully add a new node.
-	// The v1 hostname is intentionally provided with the short name here.
-	bmcHost = "mlab1.lga0t"
+	bmcHost = "mlab1-lga0t.mlab-sandbox.measurement-lab.org"
 	bmcAddr = "127.0.0.1"
 	bmcUser = "user"
 	bmcPass = "pass"
 	addCredentials()
 
 	// Check the node that's been just added.
-	c, err := prov.FindCredentials(context.Background(), "mlab1d.lga0t.measurement-lab.org")
+	c, err := prov.FindCredentials(context.Background(), "mlab1d-lga0t.mlab-sandbox.measurement-lab.org")
 	if err != nil {
 		t.Errorf("FindCredentials() returned error: %v", err)
 	}
-	if c.Hostname != "mlab1d.lga0t.measurement-lab.org" ||
+	if c.Hostname != "mlab1d-lga0t.mlab-sandbox.measurement-lab.org" ||
 		c.Username != "user" || c.Password != "pass" ||
 		c.Address != "127.0.0.1" || c.Model != "DRAC" {
 		t.Errorf("AddCredentials() didn't add the expected entity: %v", c)

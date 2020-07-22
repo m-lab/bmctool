@@ -41,7 +41,7 @@ func Test_exec(t *testing.T) {
 	// Create fake Credentials.
 	fakeCreds := &creds.Credentials{
 		Address:  "127.0.0.1",
-		Hostname: "mlab1d.tst01.lga0t.measurement-lab.org",
+		Hostname: "mlab1d-lga0t.mlab-sandbox.measurement-lab.org",
 		Username: "username",
 		Password: "password",
 		Model:    "DRAC",
@@ -62,7 +62,8 @@ func Test_exec(t *testing.T) {
 
 	// Set up a FakeProvider with fake credentials.
 	prov := credstest.NewProvider()
-	prov.AddCredentials(context.Background(), "mlab1d.tst01.measurement-lab.org", fakeCreds)
+	prov.AddCredentials(context.Background(),
+		"mlab1d-lga0t.mlab-sandbox.measurement-lab.org", fakeCreds)
 
 	oldCredsNewProvider := credsNewProvider
 	oldNewConnector := newConnector
@@ -82,7 +83,7 @@ func Test_exec(t *testing.T) {
 	useTunnel = true
 	tunnelHost = "test"
 	sshUser = "test"
-	exec("mlab1d.tst01", "help")
+	exec("mlab1d-lga0t", "help")
 
 	if c.conn.execCalls != 1 {
 		t.Errorf("exec called but execCalls != 1")
