@@ -36,20 +36,20 @@ func init() {
 }
 
 func exec(host, cmd string) {
-	bmcHost := makeBMCHostname(host)
+	bmcNode := makeBMCHostname(host)
 
-	log.Infof("Project: %s", projectID)
-	log.Infof("Fetching credentials for %s", bmcHost)
-	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
+	log.Infof("Project: %s", bmcNode.Project)
+	log.Infof("Fetching credentials for %s", bmcNode.String())
+	provider, err := credsNewProvider(&creds.DatastoreConnector{}, bmcNode.Project, namespace)
 	rtx.Must(err, "Cannot connect to Datastore")
 	defer provider.Close()
 
-	creds, err := provider.FindCredentials(context.Background(), bmcHost)
+	creds, err := provider.FindCredentials(context.Background(), bmcNode.String())
 	rtx.Must(err, "Cannot fetch credentials")
 
 	// Make a connection to the BMC.
 	connectionConfig := &connector.ConnectionConfig{
-		Hostname: bmcHost,
+		Hostname: bmcNode.String(),
 		Username: creds.Username,
 		Password: creds.Password,
 		Port:     bmcPort,
@@ -68,7 +68,7 @@ func exec(host, cmd string) {
 				Dst: int(bmcPort),
 			},
 		}
-		sshForwarder := newForwarder(tunnelHost, sshUser, bmcHost, ports)
+		sshForwarder := newForwarder(tunnelHost, sshUser, bmcNode.String(), ports)
 		sshForwarder.Start(context.Background())
 		connectionConfig.Hostname = "127.0.0.1"
 		connectionConfig.Port = localPort
@@ -77,7 +77,7 @@ func exec(host, cmd string) {
 	// Establish connection to the BMC.
 	c := newConnector()
 	conn, err := c.NewConnection(connectionConfig)
-	rtx.Must(err, "Cannot connect to BMC: %s", bmcHost)
+	rtx.Must(err, "Cannot connect to BMC: %s", bmcNode.String())
 	defer conn.Close()
 
 	// Execute the command.

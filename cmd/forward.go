@@ -91,7 +91,7 @@ func forward(dstHost string) {
 		log.Error("BMCTUNNELHOST and BMCTUNNELUSER must not be empty.")
 		osExit(1)
 	}
-	dstHost = makeBMCHostname(dstHost)
+	bmcNode := makeBMCHostname(dstHost)
 
 	portFwd := []forwarder.Port{}
 	for _, port := range ports {
@@ -99,7 +99,7 @@ func forward(dstHost string) {
 		rtx.Must(err, "Cannot parse provided port")
 		portFwd = append(portFwd, p)
 	}
-	forwarder := newForwarder(tunnelHost, sshUser, dstHost, portFwd)
+	forwarder := newForwarder(tunnelHost, sshUser, bmcNode.String(), portFwd)
 
 	ctx := context.Background()
 	rtx.Must(forwarder.Start(context.Background()), "Cannot start SSH tunnel")

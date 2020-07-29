@@ -52,7 +52,7 @@ func addCredentials() {
 		osExit(1)
 	}
 
-	bmcHost = makeBMCHostname(bmcHost)
+	bmcNode := makeBMCHostname(bmcHost)
 
 	c := &creds.Credentials{
 		Address:  bmcAddr,
@@ -62,22 +62,22 @@ func addCredentials() {
 		Password: bmcPass,
 	}
 
-	log.Infof("Adding credentials for host %v", bmcHost)
+	log.Infof("Adding credentials for host %v", bmcNode.String())
 
-	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
+	provider, err := credsNewProvider(&creds.DatastoreConnector{}, bmcNode.Project, namespace)
 	rtx.Must(err, "Cannot connect to Datastore")
 	defer provider.Close()
 
 	// Provider.AddCredentials will create the entity regardless of whether it
 	// exists already or not, so we need to explicitly check to prevent
 	// overriding the existing entity by mistake.
-	_, err = provider.FindCredentials(context.Background(), bmcHost)
+	_, err = provider.FindCredentials(context.Background(), bmcNode.String())
 	if err == nil {
-		log.Errorf("Credentials for hostname %v already exist", bmcHost)
+		log.Errorf("Credentials for hostname %v already exist", bmcNode.String())
 		osExit(1)
 	}
 
-	rtx.Must(provider.AddCredentials(context.Background(), bmcHost, c),
+	rtx.Must(provider.AddCredentials(context.Background(), bmcNode.String(), c),
 		"Error while adding Credentials")
 
 	fmt.Print(c)

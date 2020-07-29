@@ -44,21 +44,21 @@ func init() {
 }
 
 func setKey(host, idx, key string) {
-	bmcHost := makeBMCHostname(host)
+	bmcNode := makeBMCHostname(host)
 
-	log.Infof("Project: %s", projectID)
-	log.Infof("Fetching credentials for %s", bmcHost)
+	log.Infof("Project: %s", bmcNode.Project)
+	log.Infof("Fetching credentials for %s", bmcNode.String())
 
-	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
+	provider, err := credsNewProvider(&creds.DatastoreConnector{}, bmcNode.Project, namespace)
 	rtx.Must(err, "Cannot connect to Datastore")
 	defer provider.Close()
 
-	creds, err := provider.FindCredentials(context.Background(), bmcHost)
+	creds, err := provider.FindCredentials(context.Background(), bmcNode.String())
 	rtx.Must(err, "Cannot fetch credentials")
 
 	// Make a connection to the host
 	connectionConfig := &connector.ConnectionConfig{
-		Hostname: bmcHost,
+		Hostname: bmcNode.String(),
 		Username: creds.Username,
 		Password: creds.Password,
 		Port:     bmcPort,
@@ -77,14 +77,14 @@ func setKey(host, idx, key string) {
 				Dst: int(bmcPort),
 			},
 		}
-		sshForwarder := forwarder.New(tunnelHost, sshUser, bmcHost, ports)
+		sshForwarder := forwarder.New(tunnelHost, sshUser, bmcNode.String(), ports)
 		sshForwarder.Start(context.Background())
 		connectionConfig.Hostname = "127.0.0.1"
 		connectionConfig.Port = localPort
 	}
 
 	conn, err := connector.NewConnector().NewConnection(connectionConfig)
-	rtx.Must(err, "Cannot connect to BMC: %s", bmcHost)
+	rtx.Must(err, "Cannot connect to BMC: %s", bmcNode.String())
 	defer conn.Close()
 
 	// Sending the racadm command via SSH in single-command mode means the
@@ -94,7 +94,7 @@ func setKey(host, idx, key string) {
 	cmd := fmt.Sprintf("racadm sshpkauth -i %d -k %s -t \"%s\"", adminIdx, idx, key)
 	log.Infof("Running command: %s", cmd)
 	out, err := conn.ExecDRACShell(cmd)
-	rtx.Must(err, "Cannot set SSH key on %s (index: %s): %s", bmcHost, idx, out)
+	rtx.Must(err, "Cannot set SSH key on %s (index: %s): %s", bmcNode.String(), idx, out)
 
 	if !strings.Contains(out, "PK SSH Authentication operation completed successfully.") {
 		log.Errorf("Operation failed: %s", out)

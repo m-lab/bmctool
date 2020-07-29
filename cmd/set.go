@@ -42,16 +42,16 @@ func init() {
 
 // setCredentials updates a Credentials entity on Google Cloud Datastore.
 func setCredentials() {
-	bmcHost = makeBMCHostname(bmcHost)
+	bmcNode := makeBMCHostname(bmcHost)
 
-	log.Infof("Updating credentials for host %v", bmcHost)
+	log.Infof("Updating credentials for host %v", bmcNode.String())
 	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
 	rtx.Must(err, "Cannot connect to Datastore")
 	defer provider.Close()
 
-	creds, err := provider.FindCredentials(context.Background(), bmcHost)
+	creds, err := provider.FindCredentials(context.Background(), bmcNode.String())
 	if err != nil {
-		log.Errorf("Error while retrieving credentials for %s: %v", bmcHost, err)
+		log.Errorf("Error while retrieving credentials for %s: %v", bmcNode.String(), err)
 		osExit(1)
 	}
 
@@ -66,7 +66,7 @@ func setCredentials() {
 	if bmcPass != "" {
 		creds.Password = bmcPass
 	}
-	rtx.Must(provider.AddCredentials(context.Background(), bmcHost, creds),
+	rtx.Must(provider.AddCredentials(context.Background(), bmcNode.String(), creds),
 		"Error while adding Credentials")
 	fmt.Print(creds)
 }
