@@ -83,7 +83,7 @@ func Test_exec(t *testing.T) {
 	useTunnel = true
 	tunnelHost = "test"
 	sshUser = "test"
-	exec("mlab1d-lga0t", "help")
+	exec("mlab1d-lga0t.mlab-sandbox.measurement-lab.org", "help")
 
 	if c.conn.execCalls != 1 {
 		t.Errorf("exec called but execCalls != 1")

@@ -56,7 +56,7 @@ func addCredentials() {
 
 	c := &creds.Credentials{
 		Address:  bmcAddr,
-		Hostname: bmcHost,
+		Hostname: bmcNode.String(),
 		Model:    "DRAC",
 		Username: bmcUser,
 		Password: bmcPass,

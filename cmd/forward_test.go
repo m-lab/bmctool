@@ -99,6 +99,6 @@ func Test_forward(t *testing.T) {
 	_, cancel := context.WithCancel(context.Background())
 
 	// forward() only returns when the context is canceled.
-	go forward("mlab1.tst01")
+	go forward("mlab1-lga0t.mlab-sandbox.measurement-lab.org")
 	cancel()
 }

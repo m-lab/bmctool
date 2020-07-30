@@ -47,6 +47,8 @@ var (
 It allows to read/create/update Credentials entities on Google Cloud Datastore,
 set up an SSH tunnel (e.g. to connect through a trusted host), and reboot nodes.`,
 	}
+
+	httpGet = http.Get
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -80,8 +82,8 @@ func parseNodeSite(hostname string) (string, string, error) {
 	return result[1], result[2], nil
 }
 
-// makeBMCHostname returns a full BMC hostname. There are different ways the
-// hostname can be provided:
+// makeBMCHostname returns a host.Name containing the components of the passed
+// hostname. The accepted formats are:
 // - mlab1.lga0t
 // - mlab1-lga0t
 // - mlab1d.lga0t
@@ -90,7 +92,10 @@ func parseNodeSite(hostname string) (string, string, error) {
 // - mlab1-lga0t.measurement-lab.org
 // - mlab1d.lga0t.measurement-lab.org
 // - mlab1d-lga0t.measurement-lab.org
-// This function returns the full hostname in any of these cases
+//
+// If the hostname is not complete, this function retrieves the project ID
+// from siteinfo. If the machine/site combination cannot be found in siteinfo,
+// it returns an error.
 func makeBMCHostname(name string) host.Name {
 	// Is it a full M-Lab hostname?
 	node, err := host.Parse(name)
@@ -102,6 +107,7 @@ func makeBMCHostname(name string) host.Name {
 			Machine: machine,
 			Site:    site,
 			Domain:  "measurement-lab.org",
+			Version: "v2",
 		}
 	}
 
@@ -113,6 +119,10 @@ func makeBMCHostname(name string) host.Name {
 	// If the projectID was not specified and can't be inferred from the
 	// hostname, get it from siteinfo.
 	if node.Project == "" {
+		// Make sure machine name does not end in 'd' already
+		if strings.HasSuffix(node.Machine, "d") {
+			node.Machine = node.Machine[:len(node.Machine)-1]
+		}
 		project, err := getProjectID(node)
 		rtx.Must(err, "cannot get project ID from siteinfo for %s-%s",
 			node.Machine, node.Site)
@@ -130,8 +140,9 @@ func makeBMCHostname(name string) host.Name {
 // getProjectID returns the correct GCP project for a given node by looking up
 // the sites/projects.json file from Siteinfo.
 func getProjectID(node host.Name) (string, error) {
-	// TODO(roberto) use m-lab/go/siteinfo.
-	resp, err := http.Get(siteinfoBaseURL + "sites/projects.json")
+	// TODO(roberto) use m-lab/go/siteinfo once it supports the projects.json
+	// output format.
+	resp, err := httpGet(siteinfoBaseURL + "sites/projects.json")
 	if err != nil {
 		return "", err
 	}
