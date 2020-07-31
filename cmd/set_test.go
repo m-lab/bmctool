@@ -39,7 +39,7 @@ func Test_setCredentials(t *testing.T) {
 	}
 
 	// setCredentials should successfully change an existing entity
-	bmcHost = "mlab4d-lga0t"
+	bmcHost = "mlab4d-lga0t.mlab-sandbox.measurement-lab.org"
 	bmcUser = "testuser"
 	bmcPass = "testpass"
 	bmcAddr = "127.0.0.2"
@@ -58,7 +58,7 @@ func Test_setCredentials(t *testing.T) {
 	}
 
 	// bmctool set should fail if called on a non-existing host.
-	bmcHost = "mlab1-abc01"
+	bmcHost = "mlab1-abc01.mlab-sandbox.measurement-lab.org"
 	assert.PanicsWithValue(t, "os.Exit called", setCredentials,
 		"os.Exit was not called")
 

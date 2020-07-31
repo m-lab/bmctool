@@ -39,7 +39,7 @@ func Test_reboot(t *testing.T) {
 	// If REBOOTAPIURL isn't set, reboot() should fail.
 	rebootAPIURL = ""
 	assert.PanicsWithValue(t, "os.Exit called", func() {
-		reboot("mlab1d.lga0t.measurement-lab.org")
+		reboot("mlab1d-lga0t.mlab-sandbox.measurement-lab.org")
 	}, "os.Exit was not called")
 	rebootAPIURL = "dummy"
 
@@ -64,13 +64,13 @@ func Test_reboot(t *testing.T) {
 
 	// Rebooting an mlab4 will always fail.
 	assert.PanicsWithValue(t, "os.Exit called", func() {
-		reboot("mlab4d.lga0t.measurement-lab.org")
+		reboot("mlab4d-lga0t.mlab-sandbox.measurement-lab.org")
 	}, "os.Exit was not called")
 
 	// Successful reboot, stdout should contain the expected message.
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	reboot("mlab1d.lga0t.measurement-lab.org")
+	reboot("mlab1d-lga0t.mlab-sandbox.measurement-lab.org")
 	log.SetOutput(os.Stderr)
 
 	if !strings.Contains(buf.String(), "Server power operation successful.") {

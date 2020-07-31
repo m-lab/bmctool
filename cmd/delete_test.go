@@ -13,7 +13,7 @@ func Test_deleteCredentials(t *testing.T) {
 	// Create fake Credentials.
 	fakeCreds := &creds.Credentials{
 		Address:  "127.0.0.1",
-		Hostname: "mlab4d.lga0t.measurement-lab.org",
+		Hostname: "mlab4d-lga0t.mlab-sandbox.measurement-lab.org",
 		Username: "username",
 		Password: "password",
 		Model:    "DRAC",

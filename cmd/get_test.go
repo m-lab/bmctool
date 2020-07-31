@@ -28,7 +28,7 @@ func Test_printCredentials(t *testing.T) {
 	}
 
 	// printCredentials is intentionally called with a short name here.
-	printCredentials("mlab4.lga0t")
+	printCredentials("mlab4-lga0t.mlab-sandbox.measurement-lab.org")
 
 	credsNewProvider = oldCredsNewProvider
 }

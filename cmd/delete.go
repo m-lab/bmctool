@@ -29,20 +29,20 @@ func init() {
 
 // deleteCredentials updates a Credentials entity on Google Cloud Datastore.
 func deleteCredentials() {
-	bmcHost = makeBMCHostname(bmcHost)
+	bmcNode := makeBMCHostname(bmcHost)
 
-	log.Infof("Deleting credentials for host %v", bmcHost)
-	provider, err := credsNewProvider(&creds.DatastoreConnector{}, projectID, namespace)
+	log.Infof("Deleting credentials for host %v", bmcNode.String())
+	provider, err := credsNewProvider(&creds.DatastoreConnector{}, bmcNode.Project, namespace)
 	rtx.Must(err, "Cannot connect to Datastore")
 	provider.Close()
 
-	err = provider.DeleteCredentials(context.Background(), bmcHost)
+	err = provider.DeleteCredentials(context.Background(), bmcNode.String())
 	// Note: Deleting a key from Datastore does not return a NoSuchEntity error
 	// if the specified key does not exist, thus the error will be nil unless
 	// something else goes wrong during the deletion.
 	// See: https://github.com/googleapis/google-cloud-go/issues/501
 	if err != nil {
-		log.Errorf("Cannot delete credentials for %s: %v", bmcHost, err)
+		log.Errorf("Cannot delete credentials for %s: %v", bmcNode.String(), err)
 		osExit(1)
 	}
 
