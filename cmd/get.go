@@ -33,13 +33,13 @@ func init() {
 // printCredentials retrieves credentials for a given hostname and prints them
 // in JSON format.
 func printCredentials(host string) {
-	node := makeBMCHostname(host)
+	bmcNode := makeBMCHostname(host)
 
-	provider, err := credsNewProvider(&creds.DatastoreConnector{}, node.Project, namespace)
+	provider, err := credsNewProvider(&creds.DatastoreConnector{}, bmcNode.Project, namespace)
 	rtx.Must(err, "Cannot connect to Datastore")
 	defer provider.Close()
 
-	creds, err := provider.FindCredentials(context.Background(), node.String())
+	creds, err := provider.FindCredentials(context.Background(), bmcNode.String())
 	rtx.Must(err, "Cannot fetch credentials")
 
 	fmt.Print(creds)

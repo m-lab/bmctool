@@ -61,15 +61,13 @@ func Execute() {
 }
 
 func init() {
-	// The --project and --name-version flags are used by several commands, thus they are defined
-	// as global ("Persistent") flags here.
+	// The --project flag is used by several commands, thus it is defined
+	// as a global ("Persistent") flag here.
 	rootCmd.PersistentFlags().StringVar(&projectID, "project", "",
 		"Project ID to use")
-	rootCmd.PersistentFlags().StringVar(&nameVersion, "name-version", "v2",
-		"Hostname version to use")
 }
 
-// parseNodeSite extracts node and site from a full hostname.
+// parseNodeSite extracts node and site from a hostname.
 func parseNodeSite(hostname string) (string, string, error) {
 	regex := regexp.MustCompile(`(mlab[1-4]d?)[.-]([a-zA-Z]{3}[0-9ct]{2}).*`)
 	result := regex.FindStringSubmatch(hostname)
@@ -92,6 +90,8 @@ func parseNodeSite(hostname string) (string, string, error) {
 // - mlab1-lga0t.measurement-lab.org
 // - mlab1d.lga0t.measurement-lab.org
 // - mlab1d-lga0t.measurement-lab.org
+// - mlab1-lga0t.mlab-sandbox.measurement-lab.org
+// - mlab1d-lga0t.mlab-sandbox.measurement-lab.org
 //
 // If the hostname is not complete, this function retrieves the project ID
 // from siteinfo. If the machine/site combination cannot be found in siteinfo,
