@@ -20,7 +20,7 @@ import (
 
 const (
 	namespace        = "reboot-api"
-	defaultBMCPort   = 806
+	defaultBMCPort   = 22
 	defaultLocalPort = 8060
 	bmcTimeout       = 30 * time.Second
 	siteinfoBaseURL  = "https://siteinfo.mlab-oti.measurementlab.net/v2/"
