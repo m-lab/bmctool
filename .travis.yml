@@ -8,7 +8,7 @@ env:
 
 before_script:
 - go get golang.org/x/tools/cmd/cover
-- go get github.com/mattn/goveralls
+- go install github.com/mattn/goveralls@latest
 
 script:
 - go test -covermode=count -coverprofile=profile.cov ./...
